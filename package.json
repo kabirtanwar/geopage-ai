@@ -1,0 +1,16 @@
+{
+  "name": "geopage-ai",
+  "version": "1.0.0",
+  "description": "GeoPage AI Local SEO Suburb Page Generator API",
+  "main": "api/generate.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.9"
+  }
+}

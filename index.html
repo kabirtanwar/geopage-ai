@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPage AI - Local SEO Suburb Page Generator</title>
+    <meta name="description" content="Generate highly optimized, non-duplicate local service pages for your target suburbs in seconds. Boost your local Google rankings on autopilot.">
+    <!-- Google Fonts: Classic Serif (Playfair Display) + Modern Geometric (Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- JSZip for packaging files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <!-- Shifting background shapes -->
+    <div class="background-decor">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <!-- Premium Navigation -->
+    <header>
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-earth-americas"></i></span>
+                <span class="logo-text">GeoPage <span class="accent-text">AI</span></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#" onclick="openContactModal(event)">Contact Us</a>
+            </nav>
+            <div class="auth-buttons">
+                <button class="btn-text-auth" onclick="openAuthModal('login')">Log In</button>
+                <button class="btn btn-primary btn-sm nav-cta" onclick="openAuthModal('signup')">Start Free <i class="fa-solid fa-rocket"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Rank Your Service Business in <span class="gradient-text">Every Suburb</span></h1>
+            <p class="hero-subtitle">Instantly generate unique, SEO-optimized landing pages for all your target service areas. Bypass the Google duplicate content penalty automatically.</p>
+        </section>
+
+        <!-- Main Dashboard Interface -->
+        <section class="dashboard-grid">
+            <!-- Left Panel: Input Wizard -->
+            <div class="glass-panel input-panel hover-card">
+                <div class="panel-header">
+                    <h2><span class="step-badge">1</span> Define Service Profile</h2>
+                </div>
+                
+                <div class="wizard-steps">
+                    <!-- Step 1: Business Details -->
+                    <div class="step-content active" id="step-1">
+                        <div class="form-group">
+                            <label for="businessName">Business Name</label>
+                            <input type="text" id="businessName" placeholder="e.g. Apex Plumbing Solutions" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessService">Primary Service Offered</label>
+                            <input type="text" id="businessService" placeholder="e.g. Emergency Plumbing & Leak Repair" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactPhone">Contact Phone Number</label>
+                            <input type="text" id="contactPhone" placeholder="e.g. (555) 123-4567" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Contact Email Address</label>
+                            <input type="email" id="contactEmail" placeholder="e.g. info@apexplumbing.com" required>
+                        </div>
+                        <button class="btn btn-primary btn-next glow-button" onclick="nextStep(2)">Next: Service Areas <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <!-- Step 2: Target Locations -->
+                    <div class="step-content" id="step-2">
+                        <div class="form-group">
+                            <label for="baseCity">Base/Parent City</label>
+                            <input type="text" id="baseCity" placeholder="e.g. Houston" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="suburbs">Target Suburbs / Service Areas (Comma Separated)</label>
+                            <textarea id="suburbs" rows="4" placeholder="e.g. Sugar Land, Katy, The Woodlands, Pearland, Cypress" required></textarea>
+                            <span class="input-hint">Tip: Paste a comma-separated list of suburbs from Wikipedia. Free tier generates 3 pages.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="localContext">Local Context & Landmarks (Optional)</label>
+                            <textarea id="localContext" rows="2" placeholder="e.g. Near Memorial Park, servicing the I-45 corridor"></textarea>
+                        </div>
+                        <div class="button-row">
+                            <button class="btn btn-secondary" onclick="nextStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                            <button class="btn btn-success glow-button" id="generateBtn" onclick="runGeneration()">Generate Pages <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Live Preview -->
+            <div class="glass-panel preview-panel hover-card">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-laptop-code"></i> Real-Time Live Preview</h2>
+                    <div class="preview-tabs" id="previewTabs">
+                        <span class="tab active">Mockup Preview</span>
+                    </div>
+                </div>
+                
+                <div class="preview-browser">
+                    <div class="browser-bar">
+                        <div class="browser-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <div class="browser-url" id="browserUrl">https://apexplumbing.com/sugar-land</div>
+                    </div>
+                    <div class="browser-viewport" id="previewViewport">
+                        <div class="preview-placeholder">
+                            <i class="fa-solid fa-code-fork placeholder-icon"></i>
+                            <p>Fill out the business profile on the left to see your SEO landing pages render here in real-time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Interactive Auth Modal (Sign In / Sign Up) -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-card auth-card glass-panel">
+            <button class="close-modal" onclick="closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login-btn" onclick="toggleAuthTab('login')">Log In</button>
+                <button class="auth-tab" id="tab-signup-btn" onclick="toggleAuthTab('signup')">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active" onsubmit="handleAuthSubmit(event, 'login')">
+                <div class="form-group">
+                    <label for="login-email">Email Address</label>
+                    <input type="email" id="login-email" placeholder="name@company.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button class="btn btn-primary btn-block glow-button" type="submit">Sign In <i class="fa-solid fa-right-to-bracket"></i></button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form" onsubmit="handleAuthSubmit(event, 'signup')">
+                <div class="form-group">
+                    <label for="signup-name">Full Name</label>
+                    <input type="text" id="signup-name" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email Address</label>
+                    <input type="email" id="signup-email" placeholder="name@company.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="At least 8 characters" required>
+                </div>
+                <button class="btn btn-success btn-block glow-button" type="submit">Create Account <i class="fa-solid fa-user-plus"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Us Modal -->
+    <div class="modal-overlay" id="contactModal">
+        <div class="modal-card glass-panel">
+            <button class="close-modal" onclick="closeContactModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header">
+                <div class="modal-gavel"><i class="fa-solid fa-envelope-open-text"></i></div>
+                <h3>Get In Touch</h3>
+                <p>Have questions about GeoPage AI? Send us a message.</p>
+            </div>
+            <form onsubmit="handleContactSubmit(event)">
+                <div class="form-group">
+                    <label for="contact-name">Name</label>
+                    <input type="text" id="contact-name" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Email Address</label>
+                    <input type="email" id="contact-email" placeholder="name@company.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" rows="3" placeholder="Tell us how we can help..." required></textarea>
+                </div>
+                <button class="btn btn-primary btn-block glow-button" type="submit">Send Message <i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Paywall Modal Overlay -->
+    <div class="modal-overlay" id="paywallModal">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <div class="modal-gavel"><i class="fa-solid fa-bolt"></i></div>
+                <h3>Unlock Unlimited Generation</h3>
+                <p>You entered <span id="requestedSuburbsCount">5</span> suburbs. The free tier is limited to 3 suburb pages.</p>
+            </div>
+            <div class="pricing-card">
+                <span class="pricing-badge">LIFETIME ACCESS</span>
+                <div class="price"><span class="currency">$</span>49<span class="period">/one-time</span></div>
+                <ul class="pricing-features">
+                    <li><i class="fa-solid fa-circle-check"></i> Generate Unlimited Suburb Pages</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Advanced Unique AI Content Re-writer</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Commercial License (Use for clients)</li>
+                    <li><i class="fa-solid fa-circle-check"></i> HTML ZIP Download ready for hosting</li>
+                </ul>
+                <a href="https://buy.stripe.com/mock_link" id="stripeLink" target="_blank" class="btn btn-primary btn-block glow-button">Buy Lifetime Access <i class="fa-solid fa-credit-card"></i></a>
+                <button class="btn-text" onclick="generateFirstThreeFree()">Or generate first 3 suburbs for free</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Chat Support Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <button class="chat-trigger-btn" id="chatTrigger" onclick="toggleChatWindow()">
+            <i class="fa-solid fa-comments bubble-icon"></i>
+            <i class="fa-solid fa-xmark close-icon"></i>
+        </button>
+        <div class="chat-window glass-panel" id="chatWindow">
+            <div class="chat-header">
+                <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+                <div class="chat-info">
+                    <h4>GeoAgent Helper</h4>
+                    <p><span class="online-indicator"></span> Active Now</p>
+                </div>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="chat-bubble bot">
+                    Hey there! 👋 I am your GeoPage setup assistant. Need help finding target suburbs or setting up Vercel?
+                </div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Ask a question..." onkeydown="handleChatKeyDown(event)">
+                <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generating Overlay -->
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="loader-card">
+            <div class="spinner"></div>
+            <h3>Generating SEO Pages...</h3>
+            <p>Llama 3.3 is writing localized copy to avoid duplicate content penalties.</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="toast" id="downloadToast">
+        <i class="fa-solid fa-circle-check toast-icon"></i>
+        <div class="toast-body">
+            <h4>Files Ready!</h4>
+            <p>Your local SEO landing pages have been zipped and downloaded.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
