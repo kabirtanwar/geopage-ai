@@ -1,4 +1,12 @@
 // =============================================
+// GUARD: Skip initialization on admin routes
+// =============================================
+if (window.location.pathname.startsWith('/admin')) {
+    // Admin has its own app.js — do not run landing page logic here
+    throw new Error('Skip: admin route');
+}
+
+// =============================================
 // CONFIGURATION
 // =============================================
 const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
