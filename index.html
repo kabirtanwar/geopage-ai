@@ -31,13 +31,14 @@
                 <span class="logo-text">GeoPage <span class="accent-text">AI</span></span>
             </div>
             <nav class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
+                <a href="#examples">Examples</a>
+                <a href="#faq">FAQ</a>
+                <a href="#pricing">Lifetime Deal</a>
                 <a href="#" onclick="openContactModal(event)">Contact Us</a>
             </nav>
             <div class="auth-buttons">
                 <button class="btn-text-auth" onclick="openAuthModal('login')">Log In</button>
-                <button class="btn btn-primary btn-sm nav-cta" onclick="openAuthModal('signup')">Start Free <i class="fa-solid fa-rocket"></i></button>
+                <button class="btn btn-primary btn-sm nav-cta" onclick="scrollToGenerator()">Generate Free <i class="fa-solid fa-rocket"></i></button>
             </div>
         </div>
     </header>
@@ -45,8 +46,37 @@
     <main class="container">
         <!-- Hero Section -->
         <section class="hero">
-            <h1>Rank Your Service Business in <span class="gradient-text">Every Suburb</span></h1>
-            <p class="hero-subtitle">Instantly generate unique, SEO-optimized landing pages for all your target service areas. Bypass the Google duplicate content penalty automatically.</p>
+            <div class="hero-kicker">Built for agencies, local SEO teams, and service businesses</div>
+            <h1>Generate Local SEO Pages for <span class="gradient-text">Every Suburb</span></h1>
+            <p class="hero-subtitle">Turn one service profile into unique, ready-to-host suburb landing pages with localized copy, SEO metadata, live previews, and ZIP export.</p>
+            <div class="hero-actions">
+                <button class="btn btn-success glow-button" onclick="scrollToGenerator()">Generate 3 Free Pages <i class="fa-solid fa-arrow-right"></i></button>
+                <a href="#examples" class="btn btn-secondary proof-link"><i class="fa-solid fa-eye"></i> See Example Output</a>
+            </div>
+            <div class="trust-strip">
+                <div><i class="fa-solid fa-circle-check"></i><span>3 pages free</span></div>
+                <div><i class="fa-solid fa-file-zipper"></i><span>HTML ZIP export</span></div>
+                <div><i class="fa-solid fa-lock"></i><span>No CMS lock-in</span></div>
+                <div><i class="fa-solid fa-brain"></i><span>Groq + Llama 3.3</span></div>
+            </div>
+        </section>
+
+        <section class="proof-grid" id="examples" aria-label="Example GeoPage AI output">
+            <article class="proof-card">
+                <span class="proof-label">SEO Metadata</span>
+                <h3>Emergency Plumbing Sugar Land | Apex Plumbing</h3>
+                <p>Each page includes a suburb-specific title and meta description built for local search snippets.</p>
+            </article>
+            <article class="proof-card proof-card-strong">
+                <span class="proof-label">Generated Page</span>
+                <h3>Trusted Emergency Plumber in Sugar Land</h3>
+                <p>Localized headline, suburb context, trust copy, and CTA sections ready to host or hand to a client.</p>
+            </article>
+            <article class="proof-card">
+                <span class="proof-label">Agency Workflow</span>
+                <h3>Paste suburbs. Generate. Download ZIP.</h3>
+                <p>Built for fast campaign launches, service-area expansion, and repeatable client deliverables.</p>
+            </article>
         </section>
 
         <!-- Main Dashboard Interface -->
@@ -54,7 +84,7 @@
             <!-- Left Panel: Input Wizard -->
             <div class="glass-panel input-panel hover-card">
                 <div class="panel-header">
-                    <h2><span class="step-badge">1</span> Define Service Profile</h2>
+                    <h2><span class="step-badge">1</span> Generate 3 Free Pages</h2>
                 </div>
                 
                 <div class="wizard-steps">
@@ -105,7 +135,7 @@
             <!-- Right Panel: Live Preview -->
             <div class="glass-panel preview-panel hover-card">
                 <div class="panel-header">
-                    <h2><i class="fa-solid fa-laptop-code"></i> Real-Time Live Preview</h2>
+                    <h2><i class="fa-solid fa-laptop-code"></i> Example Output Preview</h2>
                     <div class="preview-tabs" id="previewTabs">
                         <span class="tab active">Mockup Preview</span>
                     </div>
@@ -126,12 +156,59 @@
                             <div class="mobile-preview-demo">
                                 <span class="demo-kicker">Live example</span>
                                 <strong>Emergency Plumbing in Sugar Land</strong>
-                                <small>Unique suburb page copy, SEO metadata, and call-to-action sections generated in minutes.</small>
+                                <small>Unique headline, suburb context, SEO metadata, trust copy, and a quote CTA packaged as a ready-to-host HTML page.</small>
                             </div>
                             <p>Fill out the business profile on the left to see your SEO landing pages render here in real-time.</p>
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+
+        <section class="conversion-section" aria-label="Agency use cases">
+            <div class="section-copy">
+                <span class="section-kicker">Why agencies care</span>
+                <h2>Stop selling “AI content.” Start shipping local landing pages.</h2>
+                <p>GeoPage AI is designed around a real client deliverable: unique service-area pages that can be previewed, exported, and handed off without waiting on a writer or developer for every suburb.</p>
+            </div>
+            <div class="use-case-list">
+                <div><i class="fa-solid fa-building"></i><span>Launch city + suburb campaigns for local service clients</span></div>
+                <div><i class="fa-solid fa-clock"></i><span>Turn repetitive page builds into a repeatable 10-minute workflow</span></div>
+                <div><i class="fa-solid fa-hand-holding-dollar"></i><span>Package suburb pages as a paid client upsell or audit follow-up</span></div>
+            </div>
+        </section>
+
+        <section class="deal-section glass-panel" id="pricing">
+            <div>
+                <span class="section-kicker">Early lifetime deal</span>
+                <h2>Free for 3 suburbs. Unlimited generation for agencies that need volume.</h2>
+                <p>Use the free tier to test output quality before paying. The lifetime plan is positioned for agencies and operators creating repeat campaigns.</p>
+            </div>
+            <button class="btn btn-primary glow-button" onclick="triggerPaywall(10)">View Lifetime Access <i class="fa-solid fa-credit-card"></i></button>
+        </section>
+
+        <section class="faq-section" id="faq">
+            <div class="section-copy">
+                <span class="section-kicker">Fast answers</span>
+                <h2>Common launch questions</h2>
+            </div>
+            <div class="faq-grid">
+                <article>
+                    <h3>What do I get after generation?</h3>
+                    <p>You get suburb-specific HTML pages packaged in a ZIP, with SEO metadata, headlines, local copy, and CTA sections.</p>
+                </article>
+                <article>
+                    <h3>Is this for agencies?</h3>
+                    <p>Yes. The workflow is built for repeatable local SEO campaigns where you need many service-area pages quickly.</p>
+                </article>
+                <article>
+                    <h3>Does it replace strategy?</h3>
+                    <p>No. It speeds up production. You still choose the service, suburbs, offer, and local context that make pages useful.</p>
+                </article>
+                <article>
+                    <h3>Can I use the files anywhere?</h3>
+                    <p>The export is plain HTML, so you can host it directly, adapt it, or hand it to a developer without platform lock-in.</p>
+                </article>
             </div>
         </section>
     </main>

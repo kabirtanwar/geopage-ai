@@ -194,6 +194,21 @@ header {
     padding: 70px 0 50px 0;
 }
 
+.hero-kicker,
+.section-kicker,
+.proof-label,
+.demo-kicker {
+    color: var(--accent-success);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.hero-kicker {
+    margin-bottom: 14px;
+}
+
 .hero h1 {
     font-family: var(--font-heading);
     font-size: 3.8rem;
@@ -221,6 +236,82 @@ header {
     max-width: 800px;
     margin: 0 auto;
     font-weight: 300;
+}
+
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 30px;
+}
+
+.hero-actions .btn {
+    min-width: 220px;
+}
+
+.proof-link {
+    text-decoration: none;
+}
+
+.trust-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 920px;
+    margin: 28px auto 0;
+}
+
+.trust-strip div {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.trust-strip i {
+    color: var(--accent-success);
+}
+
+.proof-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin: 0 0 34px;
+}
+
+.proof-card {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 22px;
+    min-height: 170px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+}
+
+.proof-card-strong {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.18), rgba(16, 185, 129, 0.1));
+    border-color: rgba(99, 102, 241, 0.28);
+}
+
+.proof-card h3 {
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    font-size: 1.28rem;
+    line-height: 1.18;
+    margin: 10px 0 10px;
+}
+
+.proof-card p {
+    color: var(--text-muted);
+    font-size: 0.93rem;
 }
 
 /* Dashboard Grid Layout */
@@ -595,7 +686,27 @@ textarea:focus {
 }
 
 .mobile-preview-demo {
-    display: none;
+    display: grid;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    border: 1px solid #dbe3f0;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+}
+
+.mobile-preview-demo strong {
+    color: #111827;
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    line-height: 1.1;
+}
+
+.mobile-preview-demo small {
+    color: #475569;
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 /* Rendered Suburb Page Template Styles (Injects inside browser viewport) */
@@ -1086,6 +1197,94 @@ textarea:focus {
     display: none;
 }
 
+.conversion-section,
+.deal-section,
+.faq-section {
+    margin-bottom: 34px;
+}
+
+.conversion-section {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+    gap: 28px;
+    align-items: center;
+}
+
+.section-copy h2,
+.deal-section h2,
+.faq-section h2 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.12;
+    margin: 10px 0 12px;
+}
+
+.section-copy p,
+.deal-section p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 680px;
+}
+
+.use-case-list {
+    display: grid;
+    gap: 12px;
+}
+
+.use-case-list div {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.use-case-list i {
+    color: var(--accent-success);
+    font-size: 1.1rem;
+}
+
+.deal-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 28px 30px;
+}
+
+.deal-section .btn {
+    flex-shrink: 0;
+}
+
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.faq-grid article {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.faq-grid h3 {
+    color: var(--text-main);
+    font-size: 1rem;
+    line-height: 1.25;
+    margin-bottom: 9px;
+}
+
+.faq-grid p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
 /* Keyframes Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -1110,6 +1309,21 @@ textarea:focus {
     }
     .hero h1 {
         font-size: 2.8rem;
+    }
+
+    .proof-grid,
+    .faq-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .conversion-section,
+    .deal-section {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+
+    .deal-section {
+        flex-direction: column;
     }
 }
 
@@ -1155,6 +1369,11 @@ textarea:focus {
         text-align: left;
     }
 
+    .hero-kicker {
+        font-size: 0.7rem;
+        line-height: 1.45;
+    }
+
     .hero h1 {
         font-size: 2.35rem;
         line-height: 1.08;
@@ -1167,6 +1386,42 @@ textarea:focus {
         line-height: 1.65;
         margin: 0;
         max-width: 620px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .hero-actions .btn {
+        min-width: 0;
+    }
+
+    .trust-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 18px;
+    }
+
+    .trust-strip div {
+        justify-content: flex-start;
+        min-height: 44px;
+        font-size: 0.8rem;
+    }
+
+    .proof-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .proof-card {
+        min-height: 0;
+        padding: 18px;
+    }
+
+    .proof-card h3 {
+        font-size: 1.13rem;
     }
 
     .dashboard-grid {
@@ -1284,35 +1539,12 @@ textarea:focus {
         line-height: 1.55;
     }
 
-    .mobile-preview-demo {
-        display: grid;
-        gap: 6px;
-        margin-bottom: 14px;
-        padding: 16px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #f8fafc, #eef2ff);
-        border: 1px solid #dbe3f0;
-        box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
-    }
-
-    .demo-kicker {
-        color: var(--accent-primary);
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
-
     .mobile-preview-demo strong {
-        color: #111827;
-        font-family: var(--font-heading);
         font-size: 1.2rem;
-        line-height: 1.1;
     }
 
     .mobile-preview-demo small {
-        color: #475569;
         font-size: 0.82rem;
-        line-height: 1.45;
     }
 
     .preview-header {
@@ -1384,19 +1616,7 @@ textarea:focus {
     }
 
     .chat-widget {
-        right: 18px;
-        bottom: 94px;
-    }
-
-    .chat-trigger-btn {
-        width: 54px;
-        height: 54px;
-    }
-
-    .chat-window {
-        width: calc(100vw - 36px);
-        height: 430px;
-        max-height: calc(100vh - 170px);
+        display: none;
     }
 
     .toast {
@@ -1435,6 +1655,38 @@ textarea:focus {
         font-size: 1rem;
         font-weight: 800;
     }
+
+    .conversion-section,
+    .deal-section,
+    .faq-section {
+        margin-bottom: 26px;
+    }
+
+    .section-copy h2,
+    .deal-section h2,
+    .faq-section h2 {
+        font-size: 1.55rem;
+    }
+
+    .conversion-section {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .use-case-list div {
+        align-items: flex-start;
+        padding: 14px 15px;
+        font-size: 0.92rem;
+    }
+
+    .deal-section {
+        padding: 24px 20px;
+    }
+
+    .faq-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
 }
 
 @media (max-width: 520px) {
@@ -1470,6 +1722,10 @@ textarea:focus {
 
     .hero-subtitle {
         font-size: 0.96rem;
+    }
+
+    .trust-strip {
+        grid-template-columns: 1fr;
     }
 
     .panel-header {
