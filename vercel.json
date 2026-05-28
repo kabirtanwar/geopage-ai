@@ -2,14 +2,19 @@
   "version": 2,
   "cleanUrls": true,
   "functions": {
-    "api/generate.js": {
-      "maxDuration": 30
-    }
+    "api/generate.js": { "maxDuration": 30 },
+    "api/admin.js": { "maxDuration": 10 },
+    "api/outreach.js": { "maxDuration": 10 },
+    "api/cron.js": { "maxDuration": 30 }
   },
   "rewrites": [
-    {
-      "source": "/api/generate",
-      "destination": "/api/generate.js"
-    }
+    { "source": "/api/generate", "destination": "/api/generate.js" },
+    { "source": "/api/admin", "destination": "/api/admin.js" },
+    { "source": "/api/outreach", "destination": "/api/outreach.js" },
+    { "source": "/api/cron", "destination": "/api/cron.js" },
+    { "source": "/admin", "destination": "/admin/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron", "schedule": "0 * * * *" }
   ]
 }

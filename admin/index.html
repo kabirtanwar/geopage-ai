@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoPage AI — Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Command Center</h1>
+                <span class="status-badge" id="statusBadge">● Online</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">Overview</a>
+                <a href="#" class="nav-item" data-section="leads">Leads</a>
+                <a href="#" class="nav-item" data-section="outreach">Outreach</a>
+                <a href="#" class="nav-item" data-section="showcases">Showcases</a>
+                <a href="#" class="nav-item" data-section="optimization">Optimization</a>
+                <a href="#" class="nav-item" data-section="actions">Actions</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn btn-danger" id="killSwitch">Kill Switch</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section class="section active" id="section-overview">
+                <h2>System Overview</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-label">Total Touches</span>
+                        <span class="metric-value" id="totalTouches">0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Reply Rate</span>
+                        <span class="metric-value" id="replyRate">0%</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Trial Rate</span>
+                        <span class="metric-value" id="trialRate">0%</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Conversion Rate</span>
+                        <span class="metric-value" id="conversionRate">0%</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Revenue</span>
+                        <span class="metric-value" id="revenue">$0</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Hot Leads</span>
+                        <span class="metric-value" id="hotLeads">0</span>
+                    </div>
+                </div>
+
+                <h3>Channel Performance</h3>
+                <div id="channelBreakdown" class="breakdown-grid"></div>
+
+                <h3>Lead Tiers</h3>
+                <div id="tierBreakdown" class="breakdown-grid"></div>
+            </section>
+
+            <!-- Leads Section -->
+            <section class="section" id="section-leads">
+                <h2>Lead Pipeline</h2>
+                <div class="filters">
+                    <select id="leadTierFilter"><option value="">All Tiers</option><option value="hot">Hot</option><option value="warm">Warm</option><option value="cool">Cool</option><option value="cold">Cold</option></select>
+                    <select id="leadStatusFilter"><option value="">All Status</option><option value="new">New</option><option value="contacted">Contacted</option><option value="replied">Replied</option><option value="trial">Trial</option><option value="converted">Converted</option></select>
+                    <button class="btn btn-primary" id="refreshLeads">Refresh</button>
+                </div>
+                <table class="data-table" id="leadsTable">
+                    <thead><tr><th>Name</th><th>Platform</th><th>Niche</th><th>Score</th><th>Tier</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="leadsBody"></tbody>
+                </table>
+            </section>
+
+            <!-- Outreach Section -->
+            <section class="section" id="section-outreach">
+                <h2>Outreach Log</h2>
+                <div class="metrics-row">
+                    <div class="metric-card small"><span class="metric-label">Today Sent</span><span class="metric-value" id="todaySent">0</span></div>
+                    <div class="metric-card small"><span class="metric-label">Total Sent</span><span class="metric-value" id="totalSent">0</span></div>
+                    <div class="metric-card small"><span class="metric-label">Replies</span><span class="metric-value" id="totalReplies">0</span></div>
+                    <div class="metric-card small"><span class="metric-label">Trials</span><span class="metric-value" id="totalTrials">0</span></div>
+                </div>
+                <div id="outreachLog" class="log-list"></div>
+            </section>
+
+            <!-- Showcases Section -->
+            <section class="section" id="section-showcases">
+                <h2>Proof Assets</h2>
+                <p>Generate and manage showcase pages for outreach.</p>
+                <button class="btn btn-primary" id="generateShowcases">Generate Showcase Batch</button>
+                <div id="showcaseList" class="showcase-grid"></div>
+            </section>
+
+            <!-- Optimization Section -->
+            <section class="section" id="section-optimization">
+                <h2>Optimization Engine</h2>
+                <div id="recommendations" class="rec-list"></div>
+                <h3>Channel Allocation</h3>
+                <div id="channelAllocation" class="allocation-grid"></div>
+            </section>
+
+            <!-- Actions Section -->
+            <section class="section" id="section-actions">
+                <h2>Actions</h2>
+                <div class="actions-grid">
+                    <button class="btn btn-primary" id="runScoring">Run Lead Scoring</button>
+                    <button class="btn btn-primary" id="runAnalytics">Run Analytics</button>
+                    <button class="btn btn-primary" id="runOptimization">Run Optimization</button>
+                    <button class="btn btn-primary" id="generateOutreach">Generate Outreach Batch</button>
+                    <button class="btn btn-secondary" id="exportMetrics">Export Metrics CSV</button>
+                </div>
+                <div id="actionLog" class="log-list" style="margin-top: 20px;"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
