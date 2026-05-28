@@ -181,7 +181,10 @@ async function loadSection(section) {
 
 async function apiGet(route) {
     const res = await fetch(`${API_BASE}?route=${route}`, { headers: authHeaders() });
-    if (res.status === 401) { window.location.href = '/'; return {}; }
+    if (res.status === 401) {
+        console.warn('[Admin API] 401 on GET ' + route + ' — token exists: ' + !!window._adminToken);
+        return {};
+    }
     return res.json();
 }
 
@@ -191,7 +194,10 @@ async function apiPost(route, data) {
         headers: authHeaders(),
         body: JSON.stringify(data)
     });
-    if (res.status === 401) { window.location.href = '/'; return {}; }
+    if (res.status === 401) {
+        console.warn('[Admin API] 401 on POST ' + route + ' — token exists: ' + !!window._adminToken);
+        return {};
+    }
     return res.json();
 }
 
@@ -244,7 +250,7 @@ async function loadLeads() {
     if (status) url += `&status=${status}`;
 
     const leads = await fetch(url, { headers: authHeaders() }).then(r => r.json());
-    if (leads.error === 'Unauthorized') { window.location.href = '/'; return; }
+    if (leads.error === 'Unauthorized') { console.warn('[Admin] Unauthorized leads fetch'); return; }
 
     const tbody = document.getElementById('leadsBody');
     tbody.innerHTML = '';
@@ -296,7 +302,7 @@ async function logLeadReply(leadId) {
 // Outreach
 async function loadOutreach() {
     const status = await fetch(`${OUTREACH_API}?route=status`, { headers: authHeaders() }).then(r => r.json());
-    if (status.error === 'Unauthorized') { window.location.href = '/'; return; }
+    if (status.error === 'Unauthorized') { console.warn('[Admin] Unauthorized outreach fetch'); return; }
     document.getElementById('todaySent').textContent = status.today_sent || 0;
     document.getElementById('totalSent').textContent = status.total_sent || 0;
     document.getElementById('totalReplies').textContent = status.total_replies || 0;
