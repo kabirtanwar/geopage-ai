@@ -16,6 +16,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Supabase Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lemon Squeezy Overlay Checkout -->
+    <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
     <!-- PostHog Analytics -->
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
@@ -398,7 +400,7 @@
                 </div>
                 <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
                     <i class="fa-solid fa-lock"></i>
-                    <span>Free preview includes watermark. <a href="#pricing" onclick="triggerPaywall(0)">Upgrade</a> for clean exports.</span>
+                    <span>Free preview includes watermark. <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1" class="lemonsqueezy-button" onclick="track('checkout_overlay_opened', {source: 'upgrade_banner'})">Upgrade</a> for clean exports.</span>
                 </div>
                 
                 <div class="preview-browser">
@@ -464,7 +466,11 @@
                 <h2>Test 3 pages free. Buy unlimited when it scales your agency workflow.</h2>
                 <p>The lifetime plan is for operators who need repeatable suburb-page production, commercial use rights, and ZIP exports without per-campaign pricing.</p>
             </div>
-            <button class="btn btn-primary glow-button" onclick="triggerPaywall(10)">View Lifetime Access <i class="fa-solid fa-credit-card"></i></button>
+            <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1"
+               class="lemonsqueezy-button btn btn-primary glow-button"
+               onclick="track('checkout_overlay_opened', {source: 'deal_section'})">
+                Unlock Lifetime Access <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </section>
 
         <section class="launch-hook">
@@ -609,27 +615,46 @@
         </div>
     </div>
 
-    <!-- Paywall Modal Overlay -->
+    <!-- Upgrade Modal -->
     <div class="modal-overlay" id="paywallModal">
-        <div class="modal-card glass-panel">
-            <div class="modal-header">
-                <div class="modal-gavel"><i class="fa-solid fa-bolt"></i></div>
-                <h3>Unlock Unlimited Generation</h3>
-                <p>You entered <span id="requestedSuburbsCount">5</span> suburbs. The free tier is limited to 3 suburb pages.</p>
-            </div>
-            <div class="pricing-card">
+        <div class="modal-card upgrade-modal glass-panel">
+            <button class="close-modal" onclick="closePaywall()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="upgrade-modal-header">
                 <span class="pricing-badge">LIFETIME ACCESS</span>
-                <div class="price"><span class="currency">$</span>49<span class="period">/one-time</span></div>
-                <ul class="pricing-features">
-                    <li><i class="fa-solid fa-circle-check"></i> Generate Unlimited Suburb Pages</li>
-                    <li><i class="fa-solid fa-circle-check"></i> Advanced Unique AI Content Re-writer</li>
-                    <li><i class="fa-solid fa-circle-check"></i> Commercial License (Use for clients)</li>
-                    <li><i class="fa-solid fa-circle-check"></i> HTML ZIP Download ready for hosting</li>
-                    <li><i class="fa-solid fa-circle-check"></i> No watermark on exports</li>
-                </ul>
-                <a href="#" id="checkoutLink" target="_blank" class="btn btn-primary btn-block glow-button" onclick="track('checkout_clicked')">Buy Lifetime Access <i class="fa-solid fa-credit-card"></i></a>
-                <button class="btn-text" onclick="generateFirstThreeFree()">Or generate first 3 suburbs for free</button>
+                <h3>Unlock Unlimited Suburb Pages</h3>
+                <p class="upgrade-subtitle">Scale your local SEO fulfillment without per-campaign pricing.</p>
             </div>
+            <div class="upgrade-comparison">
+                <div class="upgrade-tier upgrade-tier-free">
+                    <div class="tier-label">Free</div>
+                    <div class="tier-price">$0</div>
+                    <ul class="tier-features">
+                        <li><i class="fa-solid fa-check"></i> 3 suburb pages</li>
+                        <li><i class="fa-solid fa-check"></i> Live preview</li>
+                        <li><i class="fa-solid fa-check"></i> ZIP export</li>
+                        <li class="tier-limitation"><i class="fa-solid fa-xmark"></i> Watermark on exports</li>
+                        <li class="tier-limitation"><i class="fa-solid fa-xmark"></i> Limited generations</li>
+                    </ul>
+                </div>
+                <div class="upgrade-tier upgrade-tier-paid">
+                    <div class="tier-label tier-label-highlight">Lifetime</div>
+                    <div class="tier-price"><span class="currency">$</span>49</div>
+                    <div class="tier-period">one-time, no subscription</div>
+                    <ul class="tier-features">
+                        <li><i class="fa-solid fa-check"></i> Unlimited suburb pages</li>
+                        <li><i class="fa-solid fa-check"></i> Clean exports, no watermark</li>
+                        <li><i class="fa-solid fa-check"></i> Commercial client license</li>
+                        <li><i class="fa-solid fa-check"></i> Deploy-ready HTML files</li>
+                        <li><i class="fa-solid fa-check"></i> Future core updates included</li>
+                    </ul>
+                    <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1"
+                       class="lemonsqueezy-button btn btn-success btn-block glow-button upgrade-cta"
+                       onclick="track('checkout_overlay_opened')">
+                        Unlock Lifetime Access <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <p class="upgrade-guarantee"><i class="fa-solid fa-shield-halved"></i> Secure checkout powered by Lemon Squeezy</p>
         </div>
     </div>
 

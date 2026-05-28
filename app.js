@@ -4,7 +4,7 @@
 const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
 const FREE_GENERATION_LIMIT = 3;
-const LEMON_SQUEEZY_URL = ''; // Set when ready
+const LEMON_SQUEEZY_URL = 'https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1';
 
 // Initialize Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -217,12 +217,13 @@ async function incrementGenerationCount() {
 // PAGE LOAD INIT
 // =============================================
 window.addEventListener('load', async () => {
-    // Handle Lemon Squeezy/Stripe success redirect
+    // Handle Lemon Squeezy success redirect
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('status') === 'success' || urlParams.get('type') === 'success') {
+    if (urlParams.get('status') === 'success' || urlParams.get('type') === 'success' || urlParams.get('checkout') === 'success') {
         localStorage.setItem('geopage_pro_user', 'true');
         isProUser = true;
         watermarkEnabled = false;
+        track('checkout_completed');
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
@@ -239,11 +240,12 @@ window.addEventListener('load', async () => {
         upgradeBanner.style.display = 'flex';
     }
 
-    // Set Lemon Squeezy checkout link
-    if (LEMON_SQUEEZY_URL) {
-        const checkoutLink = document.getElementById('checkoutLink');
-        if (checkoutLink) checkoutLink.href = LEMON_SQUEEZY_URL;
-    }
+    // Listen for Lemon Squeezy overlay events
+    window.addEventListener('message', (event) => {
+        if (event.data && event.data.includes && event.data.includes('lemonsqueezy')) {
+            track('lemonsqueezy_event', { data: event.data });
+        }
+    });
 
     track('page_view');
 });
@@ -274,9 +276,8 @@ function nextStep(step) {
 
 // Open and Close Paywall Modal
 function triggerPaywall(suburbsCount) {
-    document.getElementById('requestedSuburbsCount').textContent = suburbsCount;
     document.getElementById('paywallModal').classList.add('active');
-    track('paywall_shown', { suburbs_count: suburbsCount });
+    track('upgrade_modal_opened', { suburbs_count: suburbsCount });
 }
 
 function closePaywall() {
