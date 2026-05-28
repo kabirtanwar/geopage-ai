@@ -59,6 +59,19 @@ function closePaywall() {
     document.getElementById('paywallModal').classList.remove('active');
 }
 
+function scrollToGenerator() {
+    const dashboard = document.querySelector('.dashboard-grid');
+    const firstInput = document.getElementById('businessName');
+
+    if (dashboard) {
+        dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    setTimeout(() => {
+        if (firstInput) firstInput.focus({ preventScroll: true });
+    }, 450);
+}
+
 function generateFirstThreeFree() {
     const suburbsInput = document.getElementById('suburbs');
     const firstThree = targetSuburbsList.slice(0, 3);
