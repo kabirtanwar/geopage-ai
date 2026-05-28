@@ -358,6 +358,16 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
     const localHook = content.local_hook ? `<p class="local-hook">${escapeHtml(content.local_hook)}</p>` : '';
     const trustSignal = content.trust_signal ? `<div class="trust-signal"><span>${escapeHtml(content.trust_signal)}</span></div>` : '';
     const sectionOrder = content.section_order || ['hero', 'local_hook', 'intro', 'services', 'process', 'trust', 'faq', 'cta'];
+    const pageStyle = content._style || 'trust';
+
+    // Style-specific CSS overrides
+    const styleOverrides = {
+        emergency: `.hero { background: linear-gradient(135deg, #7f1d1d, #991b1b); } .hero h1 { font-size: 2.4rem; } .cta-btn { background-color: #dc2626; } .urgency-bar { display: block !important; } .section { padding: 30px 20px; } p { font-size: 1rem; line-height: 1.5; }`,
+        premium: `.hero { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 100px 20px; } .hero h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.5px; } .section { padding: 70px 20px; } .cta-btn { background: linear-gradient(135deg, #6366f1, #4f46e5); } h2 { font-size: 2rem; } p { font-size: 1.1rem; line-height: 1.8; }`,
+        community: `.hero { background: linear-gradient(135deg, #065f46, #047857); } .hero h1 { font-size: 2.6rem; } .local-hook { border-left-color: #059669; color: #059669; } .cta-btn { background-color: #059669; } .trust-signal { background: #ecfdf5; border-color: #a7f3d0; } .trust-signal span { color: #065f46; }`,
+        minimal: `.hero { background: #111827; padding: 60px 20px; } .hero h1 { font-size: 2.2rem; font-weight: 600; } .section { padding: 40px 20px; } p { font-size: 1rem; } h2 { font-size: 1.5rem; } .cta-btn { background: #111827; } .services-list { grid-template-columns: 1fr; }`,
+        commercial: `.hero { background: linear-gradient(135deg, #1f2937, #111827); } .hero h1 { font-size: 2.5rem; } .section { padding: 50px 20px; } .cta-btn { background-color: #374151; } .process-steps { flex-direction: column; gap: 20px; } .process-step { text-align: left; display: flex; gap: 16px; align-items: flex-start; }`,
+    };
 
     // Build body sections dynamically based on section_order
     const bodySections = sectionOrder.map(section => {
@@ -422,6 +432,8 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         .sidebar-cta { display: block; width: 100%; background-color: #6366f1; color: white; text-align: center; padding: 12px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
         footer { background-color: #111827; color: #9ca3af; text-align: center; padding: 30px; border-top: 1px solid #1f2937; }
         @media (max-width: 768px) { .content-grid, .process-steps, .services-grid { grid-template-columns: 1fr; } }
+        ${styleOverrides[pageStyle] || ''}
+    </style>
     </style>
 </head>
 <body>
