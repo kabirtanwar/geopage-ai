@@ -4,7 +4,7 @@ const OUTREACH_API = '/api/outreach';
 const ADMIN_EMAILS = (typeof ADMIN_EMAILS_CONFIG !== 'undefined') ? ADMIN_EMAILS_CONFIG : [];
 
 // ============================================================
-// DEBUG MODE — TEMPORARY: All redirects disabled, full logging
+// Auth Gate — properly waits for Supabase session
 // ============================================================
 (function initAuth() {
     const T0 = performance.now();
@@ -15,138 +15,83 @@ const ADMIN_EMAILS = (typeof ADMIN_EMAILS_CONFIG !== 'undefined') ? ADMIN_EMAILS
         console.log(`[Admin Auth ${ms}ms] ${msg}`);
     }
 
-    function dump(label, obj) {
-        console.groupCollapsed(`[Admin Auth] ${label}`);
-        console.log(obj);
-        console.groupEnd();
-    }
-
-    function allowDashboard(user, token, reason) {
+    function allowDashboard(user, token) {
         window._adminUser = user;
         window._adminToken = token;
-        const email = user ? (user.email || '').toLowerCase() : 'none';
+        const email = (user.email || '').toLowerCase();
         document.getElementById('adminEmail').textContent = email;
         if (gate) gate.remove();
-        log('DASHBOARD ALLOWED — ' + reason + ' — email: ' + email);
+        log('Dashboard access granted: ' + email);
     }
 
-    function debugBlock(reason) {
-        // DEBUG MODE: do NOT redirect, just log and show dashboard
-        log('BLOCKED (debug — NOT redirecting) — ' + reason);
+    function showLoginPrompt(msg) {
+        log('No session: ' + msg);
         if (gate) {
-            gate.querySelector('span').textContent = 'DEBUG: ' + reason + ' — check console';
+            gate.querySelector('span').innerHTML = msg + '<br><a href="/" style="color:#6366f1;margin-top:12px;display:inline-block;">Go to login →</a>';
             gate.querySelector('div').style.borderTopColor = '#f59e0b';
-            // Remove after 3s so dashboard is visible
-            setTimeout(() => { if (gate) gate.remove(); }, 3000);
         }
     }
 
-    log('Auth init started');
-    log('ADMIN_EMAILS_CONFIG = ' + JSON.stringify(ADMIN_EMAILS));
-
-    // Wait for window.supabase to be available (CDN may not have loaded yet)
     function waitForSupabase(retries) {
         return new Promise((resolve, reject) => {
-            if (window.supabase && window.supabase.createClient) {
-                resolve(window.supabase);
-                return;
-            }
-            if (retries <= 0) {
-                reject(new Error('Supabase SDK failed to load after 50 retries'));
-                return;
-            }
+            if (window.supabase && window.supabase.createClient) { resolve(window.supabase); return; }
+            if (retries <= 0) { reject(new Error('Supabase SDK failed to load')); return; }
             setTimeout(() => waitForSupabase(retries - 1).then(resolve).catch(reject), 100);
         });
     }
 
     waitForSupabase(50).then((supabase) => {
-        log('Supabase SDK loaded');
-
         const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        log('Supabase client created');
 
-        // Check existing session first (fast path)
-        client.auth.getSession().then(({ data: { session }, error }) => {
-            log('getSession() returned');
-            if (error) {
-                dump('getSession error', error);
-            }
-            dump('Full session object', session);
+        client.auth.getSession().then(({ data: { session } }) => {
             if (session) {
-                dump('session.user', session.user);
-                log('session.user.email = "' + session.user.email + '"');
-                log('session.user.email.toLowerCase() = "' + (session.user.email || '').toLowerCase() + '"');
-                log('session.user.id = ' + session.user.id);
-                log('session.access_token exists = ' + !!session.access_token);
-                log('ADMIN_EMAILS = ' + JSON.stringify(ADMIN_EMAILS));
-                log('ADMIN_EMAILS.length = ' + ADMIN_EMAILS.length);
                 const email = (session.user.email || '').toLowerCase().trim();
-                const inWhitelist = ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(email);
-                log('email.trim() = "' + email + '"');
-                log('email in whitelist = ' + inWhitelist);
-                ADMIN_EMAILS.forEach((ae, i) => {
-                    log('  ADMIN_EMAILS[' + i + '] = "' + ae + '" === "' + email + '" ? ' + (ae === email));
-                });
-                if (inWhitelist) {
-                    allowDashboard(session.user, session.access_token, 'Session found, email valid');
-                } else {
-                    debugBlock('Email "' + email + '" not in whitelist');
+                if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(email)) {
+                    showLoginPrompt('Email "' + email + '" is not authorized for admin access.');
+                    return;
                 }
+                allowDashboard(session.user, session.access_token);
                 return;
             }
 
-            // No session yet — listen for auth state change
-            log('No session from getSession(), listening for onAuthStateChange...');
+            // No session — wait for Supabase to hydrate from localStorage
+            log('No session yet, waiting for onAuthStateChange...');
             let resolved = false;
             const { data: { subscription } } = client.auth.onAuthStateChange((event, sess) => {
-                log('onAuthStateChange fired — event="' + event + '"');
-                dump('onAuthStateChange session', sess);
-                if (resolved) {
-                    log('Already resolved, ignoring');
-                    return;
-                }
+                if (resolved) return;
                 if (sess) {
                     resolved = true;
                     subscription.unsubscribe();
-                    log('session.user.email = "' + (sess.user.email || '') + '"');
                     const email = (sess.user.email || '').toLowerCase().trim();
-                    log('ADMIN_EMAILS = ' + JSON.stringify(ADMIN_EMAILS));
-                    const inWhitelist = ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(email);
-                    log('email "' + email + '" in whitelist = ' + inWhitelist);
-                    if (inWhitelist) {
-                        allowDashboard(sess.user, sess.access_token, 'Auth state changed, email valid');
-                    } else {
-                        debugBlock('Email "' + email + '" not in whitelist (auth state)');
+                    if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(email)) {
+                        showLoginPrompt('Email "' + email + '" is not authorized for admin access.');
+                        return;
                     }
+                    allowDashboard(sess.user, sess.access_token);
                 } else if (event === 'SIGNED_OUT') {
                     resolved = true;
                     subscription.unsubscribe();
-                    debugBlock('SIGNED_OUT event, no session');
-                } else {
-                    log('onAuthStateChange event="' + event + '" with null session — waiting...');
+                    showLoginPrompt('You are not signed in. Please log in first.');
                 }
             });
 
-            // Timeout
+            // If no auth state after 5s, show login prompt (don't redirect)
             setTimeout(() => {
                 if (!resolved) {
                     resolved = true;
                     try { subscription.unsubscribe(); } catch {}
-                    debugBlock('Auth timeout after 8s');
+                    showLoginPrompt('Session not found. Please log in on the main site first.');
                 }
-            }, 8000);
+            }, 5000);
         }).catch((err) => {
-            log('getSession() threw: ' + err.message);
-            dump('getSession error', err);
-            // DEBUG: show dashboard anyway
-            allowDashboard({ email: 'error-check-console' }, null, 'Error in getSession — check console');
+            log('getSession error: ' + err.message);
+            showLoginPrompt('Auth check failed: ' + err.message);
         });
     }).catch((err) => {
-        log('Supabase SDK failed to load: ' + err.message);
-        // DEBUG: show dashboard anyway
-        allowDashboard({ email: 'sdk-error' }, null, 'SDK load error — check console');
+        log('SDK load failed: ' + err.message);
+        showLoginPrompt('Failed to load Supabase SDK: ' + err.message);
     });
 })();
 
