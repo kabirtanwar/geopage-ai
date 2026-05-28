@@ -314,6 +314,83 @@ header {
     font-size: 0.93rem;
 }
 
+.demo-pages-section {
+    margin-bottom: 34px;
+}
+
+.demo-heading {
+    max-width: 760px;
+    margin-bottom: 18px;
+}
+
+.demo-page-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.demo-page-card {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 20px;
+    min-height: 290px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+}
+
+.demo-tag {
+    align-self: flex-start;
+    border: 1px solid rgba(16, 185, 129, 0.24);
+    border-radius: 999px;
+    color: var(--accent-success);
+    background: rgba(16, 185, 129, 0.08);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 10px;
+    text-transform: uppercase;
+}
+
+.demo-page-card h3 {
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    line-height: 1.16;
+    margin: 14px 0 10px;
+}
+
+.demo-page-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.demo-page-card ul {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 18px;
+}
+
+.demo-page-card li {
+    color: var(--text-main);
+    display: flex;
+    gap: 8px;
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.demo-page-card li::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    flex: 0 0 auto;
+    margin-top: 6px;
+}
+
 /* Dashboard Grid Layout */
 .dashboard-grid {
     display: grid;
@@ -925,7 +1002,7 @@ textarea:focus {
     bottom: 30px;
     right: 30px;
     z-index: 90;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: flex-end;
 }
@@ -1198,7 +1275,9 @@ textarea:focus {
 }
 
 .conversion-section,
+.founder-section,
 .deal-section,
+.launch-hook,
 .faq-section {
     margin-bottom: 34px;
 }
@@ -1260,9 +1339,68 @@ textarea:focus {
     flex-shrink: 0;
 }
 
+.founder-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 28px;
+    align-items: center;
+    padding: 30px;
+}
+
+.founder-copy h2,
+.launch-hook h2 {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    line-height: 1.12;
+    margin: 10px 0 12px;
+}
+
+.founder-copy p,
+.launch-hook p {
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    max-width: 760px;
+}
+
+.founder-proof {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.16), rgba(16, 185, 129, 0.1));
+    border: 1px solid rgba(99, 102, 241, 0.24);
+    border-radius: 18px;
+    padding: 24px;
+    display: grid;
+    gap: 10px;
+}
+
+.founder-proof strong {
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    line-height: 1.18;
+}
+
+.founder-proof span {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+}
+
+.launch-hook {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.launch-hook .btn {
+    flex-shrink: 0;
+}
+
 .faq-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -1312,17 +1450,21 @@ textarea:focus {
     }
 
     .proof-grid,
+    .demo-page-grid,
     .faq-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .conversion-section,
+    .founder-section,
+    .launch-hook,
     .deal-section {
         grid-template-columns: 1fr;
         align-items: flex-start;
     }
 
-    .deal-section {
+    .deal-section,
+    .launch-hook {
         flex-direction: column;
     }
 }
@@ -1656,14 +1798,19 @@ textarea:focus {
         font-weight: 800;
     }
 
+    .demo-pages-section,
     .conversion-section,
+    .founder-section,
     .deal-section,
+    .launch-hook,
     .faq-section {
         margin-bottom: 26px;
     }
 
     .section-copy h2,
+    .founder-copy h2,
     .deal-section h2,
+    .launch-hook h2,
     .faq-section h2 {
         font-size: 1.55rem;
     }
@@ -1681,6 +1828,25 @@ textarea:focus {
 
     .deal-section {
         padding: 24px 20px;
+    }
+
+    .founder-section,
+    .launch-hook {
+        padding: 24px 20px;
+    }
+
+    .founder-proof {
+        padding: 20px;
+    }
+
+    .demo-page-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .demo-page-card {
+        min-height: 0;
+        padding: 18px;
     }
 
     .faq-grid {

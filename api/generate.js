@@ -68,21 +68,30 @@ module.exports = async (req, res) => {
     }
 
     // Construct Groq OpenAI-compatible payload
-    const systemPrompt = `You are a Local SEO copywriting genius. Generate unique, high-converting copy for a local service landing page. 
+    const systemPrompt = `You are an agency-grade local SEO strategist and conversion copywriter. Generate a client-ready local service landing page draft that feels specific to the suburb, service, and buyer intent.
+    Avoid generic filler, fake statistics, unverifiable awards, and repetitive wording.
+    Do NOT claim the business is licensed, insured, bonded, locally owned, certified, award-winning, guaranteed, or code-compliant unless that exact fact is provided by the user.
+    Do NOT mention free estimates unless the user provided that offer.
+    Do NOT write empty lines like "serving residents and visitors" or "complete satisfaction."
+    Prefer concrete service process language, customer pain points, and suburb-specific relevance.
+    Make the page sound like a real local business page an agency could hand to a client after light editing.
+    Use the local context when provided, but do not invent exact landmarks, licensing claims, reviews, or guarantees.
     The output MUST be a valid JSON object.
     The JSON structure MUST have exactly these keys:
-    - "meta_title": (highly optimized SEO title, 50-60 characters, containing the service, suburb and business name)
-    - "meta_description": (compelling SEO meta description, 140-155 characters, with a call to action)
-    - "headline": (catchy primary H1 header, e.g. "Trusted Plumber in Sugar Land")
-    - "subheadline": (persuasive benefit statement)
-    - "paragraph_1": (4-5 sentences detailing the service in this specific suburb. Mention local context/landmarks/streets if provided: ${localContext || 'None provided'})
-    - "paragraph_2": (4-5 sentences emphasizing trust, emergency dispatch speed, local credentials, and an estimate call-to-action)`;
+    - "meta_title": (SEO title, 50-60 characters when possible, containing the service, suburb, and business name)
+    - "meta_description": (compelling search snippet, 140-155 characters when possible, with a clear call to action)
+    - "headline": (specific H1 using service + suburb, not hype)
+    - "subheadline": (one concise benefit statement focused on local intent)
+    - "paragraph_1": (4-5 sentences about the service in this suburb. Include a concrete local angle from this context if useful: ${localContext || 'None provided'})
+    - "paragraph_2": (4-5 sentences covering response process, trust, what the customer should do next, and an estimate/appointment CTA)
+    Make every suburb output noticeably different in wording and angle.`;
 
     const userPrompt = `
     Business Name: ${businessName}
     Primary Service: ${service}
     Target Suburb: ${suburb}
     Parent City: ${baseCity}
+    Local Context: ${localContext || 'None provided'}
     `;
 
     const apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';

@@ -32,12 +32,13 @@
             </div>
             <nav class="nav-links">
                 <a href="#examples">Examples</a>
+                <a href="#demo-pages">Demo Pages</a>
+                <a href="#founder">Founder Note</a>
                 <a href="#faq">FAQ</a>
                 <a href="#pricing">Lifetime Deal</a>
-                <a href="#" onclick="openContactModal(event)">Contact Us</a>
             </nav>
             <div class="auth-buttons">
-                <button class="btn-text-auth" onclick="openAuthModal('login')">Log In</button>
+                <button class="btn-text-auth" onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })">Lifetime Deal</button>
                 <button class="btn btn-primary btn-sm nav-cta" onclick="scrollToGenerator()">Generate Free <i class="fa-solid fa-rocket"></i></button>
             </div>
         </div>
@@ -46,37 +47,87 @@
     <main class="container">
         <!-- Hero Section -->
         <section class="hero">
-            <div class="hero-kicker">Built for agencies, local SEO teams, and service businesses</div>
-            <h1>Generate Local SEO Pages for <span class="gradient-text">Every Suburb</span></h1>
-            <p class="hero-subtitle">Turn one service profile into unique, ready-to-host suburb landing pages with localized copy, SEO metadata, live previews, and ZIP export.</p>
+            <div class="hero-kicker">Built for agencies tired of rewriting the same suburb page 40 times</div>
+            <h1>Turn One Local SEO Brief Into <span class="gradient-text">Client-Ready Suburb Pages</span></h1>
+            <p class="hero-subtitle">GeoPage AI turns a service, city, and suburb list into unique local landing pages with SEO metadata, localized copy, live previews, commercial use rights, and plain HTML ZIP export.</p>
             <div class="hero-actions">
                 <button class="btn btn-success glow-button" onclick="scrollToGenerator()">Generate 3 Free Pages <i class="fa-solid fa-arrow-right"></i></button>
-                <a href="#examples" class="btn btn-secondary proof-link"><i class="fa-solid fa-eye"></i> See Example Output</a>
+                <a href="#demo-pages" class="btn btn-secondary proof-link"><i class="fa-solid fa-eye"></i> View Demo Pages</a>
             </div>
             <div class="trust-strip">
                 <div><i class="fa-solid fa-circle-check"></i><span>3 pages free</span></div>
-                <div><i class="fa-solid fa-file-zipper"></i><span>HTML ZIP export</span></div>
+                <div><i class="fa-solid fa-file-zipper"></i><span>Plain HTML ZIP export</span></div>
+                <div><i class="fa-solid fa-briefcase"></i><span>Commercial client use</span></div>
                 <div><i class="fa-solid fa-lock"></i><span>No CMS lock-in</span></div>
-                <div><i class="fa-solid fa-brain"></i><span>Groq + Llama 3.3</span></div>
             </div>
         </section>
 
         <section class="proof-grid" id="examples" aria-label="Example GeoPage AI output">
             <article class="proof-card">
-                <span class="proof-label">SEO Metadata</span>
-                <h3>Emergency Plumbing Sugar Land | Apex Plumbing</h3>
-                <p>Each page includes a suburb-specific title and meta description built for local search snippets.</p>
+                <span class="proof-label">Before</span>
+                <h3>One generic service page trying to rank everywhere</h3>
+                <p>Thin city pages, duplicate copy, slow writer handoffs, and no easy way to package a suburb expansion for clients.</p>
             </article>
             <article class="proof-card proof-card-strong">
-                <span class="proof-label">Generated Page</span>
-                <h3>Trusted Emergency Plumber in Sugar Land</h3>
-                <p>Localized headline, suburb context, trust copy, and CTA sections ready to host or hand to a client.</p>
+                <span class="proof-label">After</span>
+                <h3>Unique landing pages for each target suburb</h3>
+                <p>Localized headlines, metadata, client-ready copy, estimate CTAs, preview tabs, and downloadable HTML files.</p>
             </article>
             <article class="proof-card">
-                <span class="proof-label">Agency Workflow</span>
-                <h3>Paste suburbs. Generate. Download ZIP.</h3>
-                <p>Built for fast campaign launches, service-area expansion, and repeatable client deliverables.</p>
+                <span class="proof-label">Workflow</span>
+                <h3>Paste suburbs. Review output. Send the ZIP.</h3>
+                <p>Useful for campaign builds, audit follow-ups, service-area upsells, and getting the first draft done today.</p>
             </article>
+        </section>
+
+        <section class="demo-pages-section" id="demo-pages" aria-label="Niche-specific demo outputs">
+            <div class="section-copy demo-heading">
+                <span class="section-kicker">Client-ready examples</span>
+                <h2>Four niches agencies can sell this into immediately</h2>
+                <p>These are the kinds of deliverables GeoPage AI is built to produce: local, specific, readable, and easy to package for service-area campaigns.</p>
+            </div>
+            <div class="demo-page-grid">
+                <article class="demo-page-card">
+                    <span class="demo-tag">Plumbing</span>
+                    <h3>Emergency Plumber in Sugar Land</h3>
+                    <p>A suburb page for urgent leak repair near Town Square, with 24/7 response language and estimate CTA.</p>
+                    <ul>
+                        <li>Meta title and description</li>
+                        <li>Local context paragraph</li>
+                        <li>Phone-first emergency CTA</li>
+                    </ul>
+                </article>
+                <article class="demo-page-card">
+                    <span class="demo-tag">HVAC</span>
+                    <h3>AC Repair in Scottsdale Ranch</h3>
+                    <p>Targets high-heat service calls, fast diagnostics, maintenance plans, and neighborhood-specific comfort needs.</p>
+                    <ul>
+                        <li>Seasonal urgency angle</li>
+                        <li>Trust and technician copy</li>
+                        <li>Quote request sidebar</li>
+                    </ul>
+                </article>
+                <article class="demo-page-card">
+                    <span class="demo-tag">Roofing</span>
+                    <h3>Storm Roof Repair in Frisco</h3>
+                    <p>Built around hail damage, inspection requests, insurance-aware language, and local neighborhood coverage.</p>
+                    <ul>
+                        <li>Damage-specific positioning</li>
+                        <li>Inspection call-to-action</li>
+                        <li>Service-area relevance</li>
+                    </ul>
+                </article>
+                <article class="demo-page-card">
+                    <span class="demo-tag">Dental</span>
+                    <h3>Family Dentist in Lakewood</h3>
+                    <p>Creates a calmer local page for families comparing preventive care, appointments, and trusted nearby practices.</p>
+                    <ul>
+                        <li>Family-focused copy</li>
+                        <li>Appointment CTA</li>
+                        <li>Suburb-specific relevance</li>
+                    </ul>
+                </article>
+            </div>
         </section>
 
         <!-- Main Dashboard Interface -->
@@ -168,7 +219,7 @@
         <section class="conversion-section" aria-label="Agency use cases">
             <div class="section-copy">
                 <span class="section-kicker">Why agencies care</span>
-                <h2>Stop selling “AI content.” Start shipping local landing pages.</h2>
+                <h2>Stop selling AI content. Start shipping local landing pages.</h2>
                 <p>GeoPage AI is designed around a real client deliverable: unique service-area pages that can be previewed, exported, and handed off without waiting on a writer or developer for every suburb.</p>
             </div>
             <div class="use-case-list">
@@ -178,13 +229,35 @@
             </div>
         </section>
 
+        <section class="founder-section glass-panel" id="founder">
+            <div class="founder-copy">
+                <span class="section-kicker">Why this exists</span>
+                <h2>I built GeoPage AI for the boring, profitable work agencies actually sell.</h2>
+                <p>Local SEO teams do not need another blank AI writer. They need a repeatable way to turn one client brief into suburb pages that look like deliverables: metadata, local angles, previewable pages, and files a client or developer can use.</p>
+                <p>The goal is simple: remove the repetitive first draft work so agencies can spend time on strategy, offers, links, and client relationships.</p>
+            </div>
+            <div class="founder-proof">
+                <strong>Built around the workflow, not the novelty.</strong>
+                <span>Brief -> Suburbs -> Preview -> ZIP -> Client handoff</span>
+            </div>
+        </section>
+
         <section class="deal-section glass-panel" id="pricing">
             <div>
                 <span class="section-kicker">Early lifetime deal</span>
-                <h2>Free for 3 suburbs. Unlimited generation for agencies that need volume.</h2>
-                <p>Use the free tier to test output quality before paying. The lifetime plan is positioned for agencies and operators creating repeat campaigns.</p>
+                <h2>Test 3 pages free. Buy unlimited when it becomes part of your agency workflow.</h2>
+                <p>The lifetime plan is for operators who want repeatable suburb-page production, commercial use, and ZIP exports without paying per client campaign.</p>
             </div>
             <button class="btn btn-primary glow-button" onclick="triggerPaywall(10)">View Lifetime Access <i class="fa-solid fa-credit-card"></i></button>
+        </section>
+
+        <section class="launch-hook">
+            <div>
+                <span class="section-kicker">Pre-launch proof file</span>
+                <h2>Want the next batch of output examples?</h2>
+                <p>I am collecting real agency use cases, niche examples, and before/after page packs for launch. Ask for the proof file and I will send the next set.</p>
+            </div>
+            <a class="btn btn-secondary proof-link" href="mailto:hello@geopage.ai?subject=Send%20GeoPage%20AI%20proof%20examples">Request Proof File <i class="fa-solid fa-envelope"></i></a>
         </section>
 
         <section class="faq-section" id="faq">
@@ -208,6 +281,14 @@
                 <article>
                     <h3>Can I use the files anywhere?</h3>
                     <p>The export is plain HTML, so you can host it directly, adapt it, or hand it to a developer without platform lock-in.</p>
+                </article>
+                <article>
+                    <h3>Can I use this for client work?</h3>
+                    <p>Yes. The offer is framed for commercial agency use, especially repeatable local SEO and service-area campaigns.</p>
+                </article>
+                <article>
+                    <h3>Why not just use a generic AI writer?</h3>
+                    <p>Generic AI starts with a blank page. GeoPage AI structures the workflow around suburb lists, preview tabs, metadata, and ZIP deliverables.</p>
                 </article>
             </div>
         </section>
