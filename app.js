@@ -339,6 +339,8 @@ function generateFirstThreeFree() {
 
 // Generate the HTML code for a specific suburb
 function generateHTMLTemplate(business, service, phone, email, suburb, baseCity, content) {
+    const paragraphs = content.paragraphs || [content.paragraph_1 || '', content.paragraph_2 || ''];
+    const paragraphsHTML = paragraphs.map(p => `<p>${escapeHtml(p)}</p>`).join('\n');
     const servicesList = (content.services || []).map(s => `<li>${escapeHtml(s)}</li>`).join('');
     const processHTML = (content.process_steps || []).map(step => `
         <div class="process-step">
@@ -355,6 +357,22 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
     const ctaText = content.cta_text || 'Contact Us';
     const localHook = content.local_hook ? `<p class="local-hook">${escapeHtml(content.local_hook)}</p>` : '';
     const trustSignal = content.trust_signal ? `<div class="trust-signal"><span>${escapeHtml(content.trust_signal)}</span></div>` : '';
+    const sectionOrder = content.section_order || ['hero', 'local_hook', 'intro', 'services', 'process', 'trust', 'faq', 'cta'];
+
+    // Build body sections dynamically based on section_order
+    const bodySections = sectionOrder.map(section => {
+        switch(section) {
+            case 'local_hook': return localHook;
+            case 'intro': return paragraphsHTML;
+            case 'services': return servicesList ? `<h2>Services We Provide</h2><ul class="services-list">${servicesList}</ul>` : '';
+            case 'process': return processHTML ? `<h2>How It Works</h2><div class="process-steps">${processHTML}</div>` : '';
+            case 'trust': return trustSignal;
+            case 'faq': return faqHTML ? `<h2>Frequently Asked Questions</h2><div class="faq-section">${faqHTML}</div>` : '';
+            case 'urgency': return `<div class="urgency-bar"><p>Need ${escapeHtml(service.toLowerCase())} in ${escapeHtml(suburb)}? We respond fast — call now.</p></div>`;
+            case 'cta': return `<section class="cta-section"><h2>Ready to Get Started?</h2><p>Contact ${escapeHtml(business)} today for reliable ${escapeHtml(service.toLowerCase())} in ${escapeHtml(suburb)}.</p><a href="tel:${phone.replace(/[^\d+]/g, '')}" class="cta-btn">${escapeHtml(ctaText)}</a></section>`;
+            default: return '';
+        }
+    }).filter(Boolean).join('\n');
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -395,6 +413,10 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         .local-hook { color: #6366f1; font-size: 0.95rem; font-weight: 600; font-style: italic; margin: 0 0 20px; padding-left: 16px; border-left: 3px solid #6366f1; line-height: 1.6; }
         .trust-signal { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
         .trust-signal span { font-size: 0.88rem; color: #166534; font-weight: 600; }
+        .services-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; }
+        .services-list li { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 16px; font-weight: 600; color: #111827; }
+        .urgency-bar { background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1px solid #fecaca; border-radius: 10px; padding: 18px 24px; margin: 20px 0; text-align: center; }
+        .urgency-bar p { color: #991b1b; font-weight: 600; font-size: 1rem; margin: 0; }
         .card { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card h3 { margin-top: 0; color: #111827; }
         .sidebar-cta { display: block; width: 100%; background-color: #6366f1; color: white; text-align: center; padding: 12px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
@@ -412,31 +434,8 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         <p>${content.subheadline || `Your trusted local ${service.toLowerCase()} partner servicing the ${suburb} community.`}</p>
     </section>
     <div class="section">
-        <div class="content-grid">
-            <div>
-                ${localHook}
-                <h2>Professional ${service} in ${suburb}, ${baseCity}</h2>
-                <p>${content.paragraph_1 || `At ${business}, we provide reliable ${service.toLowerCase()} solutions to homeowners and businesses throughout ${suburb}.`}</p>
-                <p>${content.paragraph_2 || `We offer prompt scheduling, upfront pricing, and guaranteed workmanship on every service call in the ${suburb} area.`}</p>
-                ${servicesList ? `<h3>Our Services in ${suburb}</h3><ul class="services-list" style="list-style:none;padding:0;">${servicesList}</ul>` : ''}
-            </div>
-            <div class="sidebar">
-                ${trustSignal}
-                <div class="card">
-                    <h3>Request an Estimate</h3>
-                    <p>Contact us today to discuss your project or request service in ${suburb}.</p>
-                    <a href="tel:${phone.replace(/[^\d+]/g, '')}" class="sidebar-cta"><i class="fa-solid fa-phone"></i> ${ctaText}</a>
-                </div>
-            </div>
-        </div>
+        ${bodySections}
     </div>
-    ${processHTML ? `<div class="process-section"><div class="section" style="padding:0;"><h2 style="text-align:center;">How It Works</h2><div class="process-steps">${processHTML}</div></div></div>` : ''}
-    ${faqHTML ? `<div class="faq-section"><h2>Frequently Asked Questions</h2>${faqHTML}</div>` : ''}
-    <section class="cta-section">
-        <h2>Ready to Get Started?</h2>
-        <p style="color:#cbd5e1;max-width:600px;margin:0 auto 24px;">${content.subheadline || `Contact ${business} today for reliable service in ${suburb}.`}</p>
-        <a href="tel:${phone.replace(/[^\d+]/g, '')}" class="cta-btn">${ctaText}</a>
-    </section>
     <footer>
         <p>&copy; ${new Date().getFullYear()} ${business}. All rights reserved.</p>
         <p>Email: ${email} | Phone: ${phone}</p>
@@ -513,24 +512,32 @@ function renderLivePreview(suburbName) {
     const phone = document.getElementById('contactPhone').value;
     const baseCity = document.getElementById('baseCity').value;
 
-    const servicesHTML = (content.services || []).slice(0, 4).map(s => 
-        `<span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${escapeHtml(s)}</span>`
-    ).join('');
+    const paragraphs = content.paragraphs || [content.paragraph_1 || '', content.paragraph_2 || ''];
+    const paragraphsHTML = paragraphs.map(p => `<p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 14px;">${escapeHtml(p)}</p>`).join('');
 
-    const faqHTML = (content.faq || []).slice(0, 3).map(f => 
-        `<div style="margin-bottom:14px;"><strong style="color:#111827;font-size:0.9rem;">${escapeHtml(f.q)}</strong><p style="color:#6b7280;font-size:0.85rem;margin:4px 0 0;line-height:1.5;">${escapeHtml(f.a)}</p></div>`
+    const sectionOrder = content.section_order || ['hero', 'local_hook', 'services', 'process', 'faq', 'cta'];
+
+    const localHookHTML = content.local_hook ? `<p style="color:#6366f1;font-size:0.9rem;font-weight:600;font-style:italic;margin:0 0 18px;padding-left:14px;border-left:3px solid #6366f1;line-height:1.6;">${escapeHtml(content.local_hook)}</p>` : '';
+
+    const trustSignalHTML = content.trust_signal ? `<div style="background:linear-gradient(135deg,#f0fdf4,#f0f9ff);border:1px solid #bbf7d0;border-radius:10px;padding:14px 18px;margin:16px 0;"><span style="font-size:0.85rem;color:#166534;font-weight:600;"><i class="fa-solid fa-shield-halved" style="margin-right:8px;color:#10b981;"></i>${escapeHtml(content.trust_signal)}</span></div>` : '';
+
+    const servicesHTML = (content.services || []).map(s => 
+        `<div style="background:white;border:1px solid #e5e7eb;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-check-circle" style="color:#10b981;font-size:0.85rem;"></i><span style="font-size:0.88rem;font-weight:600;color:#111827;">${escapeHtml(s)}</span></div>`
     ).join('');
 
     const processHTML = (content.process_steps || []).map(step => `
-        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
-            <div style="width:28px;height:28px;background:#6366f1;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">${step.step}</div>
-            <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.5;">${escapeHtml(step.description)}</p>
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;">
+            <div style="width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;box-shadow:0 2px 8px rgba(99,102,241,0.3);">${step.step}</div>
+            <p style="color:#4b5563;font-size:0.88rem;margin:4px 0 0;line-height:1.5;">${escapeHtml(step.description)}</p>
         </div>
     `).join('');
 
-    const localHookHTML = content.local_hook ? `<p style="color:#6366f1;font-size:0.9rem;font-weight:600;font-style:italic;margin:0 0 16px;padding-left:14px;border-left:3px solid #6366f1;">${escapeHtml(content.local_hook)}</p>` : '';
-
-    const trustSignalHTML = content.trust_signal ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px;"><span style="font-size:0.82rem;color:#166534;font-weight:600;"><i class="fa-solid fa-shield-halved" style="margin-right:6px;"></i>${escapeHtml(content.trust_signal)}</span></div>` : '';
+    const faqHTML = (content.faq || []).map(f => `
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f1f5f9;">
+            <strong style="color:#111827;font-size:0.9rem;display:block;margin-bottom:4px;">${escapeHtml(f.q)}</strong>
+            <p style="color:#6b7280;font-size:0.85rem;margin:0;line-height:1.5;">${escapeHtml(f.a)}</p>
+        </div>
+    `).join('');
 
     const previewHTML = `
         <div class="suburb-page-preview">
@@ -543,15 +550,19 @@ function renderLivePreview(suburbName) {
                 <p>${escapeHtml(content.subheadline || 'Trusted local specialists serving the ' + suburbName + ' area.')}</p>
             </div>
             <div style="padding:28px 24px;">
-                ${localHookHTML}
-                <h4 style="font-family:var(--font-heading);font-size:1.2rem;margin:0 0 12px;color:#111827;">${escapeHtml(service)} in ${escapeHtml(suburbName)}</h4>
-                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">${escapeHtml(content.paragraph_1 || '')}</p>
-                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">${escapeHtml(content.paragraph_2 || '')}</p>
-                ${servicesHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:0 0 8px;font-weight:700;">Services</h5><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">${servicesHTML}</div>` : ''}
-                ${processHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">How It Works</h5>${processHTML}` : ''}
-                ${trustSignalHTML}
-                ${faqHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">Common Questions</h5><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;">${faqHTML}</div>` : ''}
-                <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">${escapeHtml(content.cta_text || 'Get a Free Estimate')}</a>
+                ${sectionOrder.map(section => {
+                    switch(section) {
+                        case 'local_hook': return localHookHTML;
+                        case 'intro': return paragraphsHTML;
+                        case 'services': return servicesHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">Our Services</h5><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">${servicesHTML}</div>` : '';
+                        case 'process': return processHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">How It Works</h5>${processHTML}` : '';
+                        case 'trust': return trustSignalHTML;
+                        case 'faq': return faqHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">Common Questions</h5><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;">${faqHTML}</div>` : '';
+                        case 'urgency': return `<div style="background:linear-gradient(135deg,#fef2f2,#fff1f2);border:1px solid #fecaca;border-radius:10px;padding:16px;margin-bottom:16px;"><p style="color:#991b1b;font-size:0.9rem;font-weight:600;margin:0;"><i class="fa-solid fa-bolt" style="margin-right:6px;"></i>Need ${escapeHtml(service.toLowerCase())} in ${escapeHtml(suburbName)}? We respond fast.</p></div>`;
+                        case 'cta': return `<a href="#" style="display:block;text-align:center;background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;padding:14px 0;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.95rem;box-shadow:0 4px 14px rgba(99,102,241,0.3);margin-top:16px;">${escapeHtml(content.cta_text || 'Get a Free Estimate')}</a>`;
+                        default: return '';
+                    }
+                }).filter(Boolean).join('')}
             </div>
         </div>
     `;
