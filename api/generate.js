@@ -69,22 +69,28 @@ module.exports = async (req, res) => {
 
     // Construct Groq OpenAI-compatible payload
     const systemPrompt = `You are an agency-grade local SEO strategist and conversion copywriter. Generate a client-ready local service landing page draft that feels specific to the suburb, service, and buyer intent.
-    Avoid generic filler, fake statistics, unverifiable awards, and repetitive wording.
-    Do NOT claim the business is licensed, insured, bonded, locally owned, certified, award-winning, guaranteed, or code-compliant unless that exact fact is provided by the user.
-    Do NOT mention free estimates unless the user provided that offer.
-    Do NOT write empty lines like "serving residents and visitors" or "complete satisfaction."
-    Prefer concrete service process language, customer pain points, and suburb-specific relevance.
-    Make the page sound like a real local business page an agency could hand to a client after light editing.
-    Use the local context when provided, but do not invent exact landmarks, licensing claims, reviews, or guarantees.
-    The output MUST be a valid JSON object.
-    The JSON structure MUST have exactly these keys:
-    - "meta_title": (SEO title, 50-60 characters when possible, containing the service, suburb, and business name)
-    - "meta_description": (compelling search snippet, 140-155 characters when possible, with a clear call to action)
-    - "headline": (specific H1 using service + suburb, not hype)
-    - "subheadline": (one concise benefit statement focused on local intent)
-    - "paragraph_1": (4-5 sentences about the service in this suburb. Include a concrete local angle from this context if useful: ${localContext || 'None provided'})
-    - "paragraph_2": (4-5 sentences covering response process, trust, what the customer should do next, and an estimate/appointment CTA)
-    Make every suburb output noticeably different in wording and angle.`;
+
+CRITICAL RULES:
+- Avoid generic filler, fake statistics, unverifiable awards, and repetitive wording.
+- Do NOT claim the business is licensed, insured, bonded, locally owned, certified, award-winning, guaranteed, or code-compliant unless that exact fact is provided by the user.
+- Do NOT mention free estimates unless the user provided that offer.
+- Do NOT write empty lines like "serving residents and visitors" or "complete satisfaction."
+- Prefer concrete service process language, customer pain points, and suburb-specific relevance.
+- Make the page sound like a real local business page an agency could hand to a client after light editing.
+- Use the local context when provided, but do not invent exact landmarks, licensing claims, reviews, or guarantees.
+- Every suburb output must be noticeably different in wording and angle from other suburbs.
+
+The output MUST be a valid JSON object with exactly these keys:
+- "meta_title": (SEO title, 50-60 characters when possible, containing service + suburb + business name)
+- "meta_description": (compelling search snippet, 140-155 characters, with clear call to action)
+- "headline": (specific H1 using service + suburb, not hype)
+- "subheadline": (one concise benefit statement focused on local intent)
+- "paragraph_1": (4-5 sentences about the service in this suburb. Include a concrete local angle from this context if useful: ${localContext || 'None provided'})
+- "paragraph_2": (4-5 sentences covering response process, trust, what the customer should do next, and an estimate/appointment CTA)
+- "services": (array of exactly 3-4 specific service items relevant to this suburb. Each is a short string like "Emergency Leak Repair" or "Water Heater Installation". Be niche-specific.)
+- "process_steps": (array of exactly 3 steps describing how the service works. Each has "step" (number 1-3) and "description" (one sentence). Example: {"step": 1, "description": "Call or book online and we confirm your appointment within the hour."})
+- "faq": (array of exactly 3 objects with "q" and "a" keys. Questions must be suburb-specific and realistic. Answers must be 1-2 sentences, practical, and non-generic.)
+- "cta_text": (a short action-oriented CTA string like "Get a Free Estimate" or "Book Same-Day Service")`;
 
     const userPrompt = `
     Business Name: ${businessName}
@@ -104,7 +110,7 @@ module.exports = async (req, res) => {
         ],
         response_format: { type: "json_object" },
         temperature: 0.7,
-        max_tokens: 1200
+        max_tokens: 2000
     };
 
     try {

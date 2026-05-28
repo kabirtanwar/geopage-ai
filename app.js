@@ -4,6 +4,14 @@ let generatedPagesData = {}; // Stores JSON details of generated suburbs
 let targetSuburbsList = [];
 let isProUser = false;
 
+// Free Tier State
+let freeGenerationCount = 0;
+const FREE_GENERATION_LIMIT = 3;
+let watermarkEnabled = true;
+
+// Live Preview State
+let livePreviewReady = false;
+
 // On Page Load: Check Stripe Payment Success in URL
 window.addEventListener('load', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -16,12 +24,28 @@ window.addEventListener('load', () => {
     // Check local storage for purchase token
     if (localStorage.getItem('geopage_pro_user') === 'true') {
         isProUser = true;
+        watermarkEnabled = false;
         // Upgrade UI buttons/badges
         const navBadge = document.querySelector('.nav-badge');
         if (navBadge) {
             navBadge.innerHTML = '<i class="fa-solid fa-crown" style="color: #fbbf24;"></i> Pro Member';
             navBadge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
         }
+    }
+
+    // Load free generation count from storage
+    freeGenerationCount = parseInt(localStorage.getItem('geopage_free_count') || '0', 10);
+
+    // Initialize Live Reactive Preview
+    initLivePreview();
+
+    // Update free tier UI
+    updateFreeTierUI();
+
+    // Show upgrade banner for free users
+    const upgradeBanner = document.getElementById('upgradeBanner');
+    if (upgradeBanner && !isProUser) {
+        upgradeBanner.style.display = 'flex';
     }
 });
 
@@ -82,6 +106,21 @@ function generateFirstThreeFree() {
 
 // Generate the HTML code for a specific suburb
 function generateHTMLTemplate(business, service, phone, email, suburb, baseCity, content) {
+    const servicesList = (content.services || []).map(s => `<li>${escapeHtml(s)}</li>`).join('');
+    const processHTML = (content.process_steps || []).map(step => `
+        <div class="process-step">
+            <div class="step-number">${step.step}</div>
+            <p>${escapeHtml(step.description)}</p>
+        </div>
+    `).join('');
+    const faqHTML = (content.faq || []).map(f => `
+        <div class="faq-item">
+            <h4>${escapeHtml(f.q)}</h4>
+            <p>${escapeHtml(f.a)}</p>
+        </div>
+    `).join('');
+    const ctaText = content.cta_text || 'Contact Us';
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,42 +137,70 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         .hero { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; text-align: center; padding: 80px 20px; }
         .hero h1 { font-size: 2.8rem; margin: 0 0 15px 0; font-weight: 700; }
         .hero p { color: #cbd5e1; font-size: 1.2rem; max-width: 700px; margin: 0 auto; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 50px 20px; display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
-        .content h2 { font-size: 1.8rem; color: #111827; margin-bottom: 20px; }
-        .content p { font-size: 1.05rem; margin-bottom: 20px; color: #4b5563; }
+        .section { max-width: 1100px; margin: 0 auto; padding: 50px 20px; }
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; }
+        h2 { font-size: 1.8rem; color: #111827; margin-bottom: 20px; }
+        p { font-size: 1.05rem; margin-bottom: 20px; color: #4b5563; }
+        .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 30px 0; }
+        .service-item { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; display: flex; align-items: center; gap: 12px; }
+        .service-item i { color: #6366f1; font-size: 1.2rem; }
+        .service-item span { font-weight: 600; color: #111827; }
+        .process-section { background: #f8fafc; padding: 40px 20px; margin: 40px 0; }
+        .process-steps { display: flex; gap: 30px; max-width: 1100px; margin: 0 auto; }
+        .process-step { flex: 1; text-align: center; }
+        .step-number { width: 48px; height: 48px; background: #6366f1; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; margin-bottom: 12px; }
+        .process-step p { color: #4b5563; font-size: 0.95rem; }
+        .faq-section { max-width: 1100px; margin: 0 auto; padding: 50px 20px; }
+        .faq-item { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+        .faq-item h4 { color: #111827; margin: 0 0 8px 0; font-size: 1.05rem; }
+        .faq-item p { color: #4b5563; margin: 0; font-size: 0.95rem; }
+        .cta-section { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; text-align: center; padding: 60px 20px; }
+        .cta-section h2 { color: white; }
+        .cta-btn { display: inline-block; background-color: #10b981; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
         .card { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card h3 { margin-top: 0; color: #111827; }
-        .cta-btn { display: block; width: 100%; background-color: #6366f1; color: white; text-align: center; padding: 12px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
+        .sidebar-cta { display: block; width: 100%; background-color: #6366f1; color: white; text-align: center; padding: 12px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
         footer { background-color: #111827; color: #9ca3af; text-align: center; padding: 30px; border-top: 1px solid #1f2937; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .content-grid, .process-steps, .services-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">${business}</div>
-        <a href="tel:${phone}" class="phone-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
+        <a href="tel:${phone.replace(/[^\d+]/g, '')}" class="phone-btn"><i class="fa-solid fa-phone"></i> Call Now</a>
     </header>
     <section class="hero">
         <h1>${content.headline || `${service} in ${suburb}`}</h1>
         <p>${content.subheadline || `Your trusted local ${service.toLowerCase()} partner servicing the ${suburb} community.`}</p>
     </section>
-    <div class="container">
-        <div class="content">
-            <h2>Professional ${service} Services in ${suburb}, ${baseCity} Area</h2>
-            <p>${content.paragraph_1 || `At ${business}, we are dedicated to providing high-quality, reliable ${service.toLowerCase()} solutions to homeowners and businesses throughout ${suburb}. Our team of experienced professionals is fully equipped to handle jobs of all sizes.`}</p>
-            <p>${content.paragraph_2 || `We understand that problems require fast solutions. That is why we offer prompt scheduling, upfront pricing, and guaranteed workmanship on every local service call in the ${suburb} area.`}</p>
-        </div>
-        <div class="sidebar">
-            <div class="card">
-                <h3>Request an Estimate</h3>
-                <p>Contact us today to discuss your project or request emergency service in ${suburb}.</p>
-                <a href="tel:${phone}" class="cta-btn"><i class="fa-solid fa-phone"></i> Contact Us</a>
+    <div class="section">
+        <div class="content-grid">
+            <div>
+                <h2>Professional ${service} in ${suburb}, ${baseCity}</h2>
+                <p>${content.paragraph_1 || `At ${business}, we provide reliable ${service.toLowerCase()} solutions to homeowners and businesses throughout ${suburb}.`}</p>
+                <p>${content.paragraph_2 || `We offer prompt scheduling, upfront pricing, and guaranteed workmanship on every service call in the ${suburb} area.`}</p>
+                ${servicesList ? `<h3>Our Services in ${suburb}</h3><ul class="services-list" style="list-style:none;padding:0;">${servicesList}</ul>` : ''}
+            </div>
+            <div class="sidebar">
+                <div class="card">
+                    <h3>Request an Estimate</h3>
+                    <p>Contact us today to discuss your project or request service in ${suburb}.</p>
+                    <a href="tel:${phone.replace(/[^\d+]/g, '')}" class="sidebar-cta"><i class="fa-solid fa-phone"></i> ${ctaText}</a>
+                </div>
             </div>
         </div>
     </div>
+    ${processHTML ? `<div class="process-section"><div class="section" style="padding:0;"><h2 style="text-align:center;">How It Works</h2><div class="process-steps">${processHTML}</div></div></div>` : ''}
+    ${faqHTML ? `<div class="faq-section"><h2>Frequently Asked Questions</h2>${faqHTML}</div>` : ''}
+    <section class="cta-section">
+        <h2>Ready to Get Started?</h2>
+        <p style="color:#cbd5e1;max-width:600px;margin:0 auto 24px;">${content.subheadline || `Contact ${business} today for reliable service in ${suburb}.`}</p>
+        <a href="tel:${phone.replace(/[^\d+]/g, '')}" class="cta-btn">${ctaText}</a>
+    </section>
     <footer>
         <p>&copy; ${new Date().getFullYear()} ${business}. All rights reserved.</p>
         <p>Email: ${email} | Phone: ${phone}</p>
+        ${!isProUser ? '<p style="margin-top:12px;font-size:0.75rem;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px;">Generated with <a href="https://geopage.ai" style="color:#6366f1;text-decoration:none;font-weight:600;">GeoPage AI</a></p>' : ''}
     </footer>
 </body>
 </html>`;
@@ -156,30 +223,33 @@ function renderLivePreview(suburbName) {
     const businessName = document.getElementById('businessName').value;
     const service = document.getElementById('businessService').value;
     const phone = document.getElementById('contactPhone').value;
-    const email = document.getElementById('contactEmail').value;
     const baseCity = document.getElementById('baseCity').value;
+
+    const servicesHTML = (content.services || []).slice(0, 3).map(s => 
+        `<span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${escapeHtml(s)}</span>`
+    ).join('');
+
+    const faqHTML = (content.faq || []).slice(0, 2).map(f => 
+        `<div style="margin-bottom:12px;"><strong style="color:#111827;font-size:0.9rem;">${escapeHtml(f.q)}</strong><p style="color:#6b7280;font-size:0.85rem;margin:4px 0 0;line-height:1.5;">${escapeHtml(f.a)}</p></div>`
+    ).join('');
 
     const previewHTML = `
         <div class="suburb-page-preview">
             <div class="preview-header">
-                <span style="font-weight: 700;">${businessName}</span>
-                <span style="background-color: #10b981; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call: ${phone}</span>
+                <span style="font-weight: 700;">${escapeHtml(businessName)}</span>
+                <span style="background-color: #10b981; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call: ${escapeHtml(phone)}</span>
             </div>
             <div class="preview-hero">
-                <h3>${content.headline || `${service} in ${suburbName}`}</h3>
-                <p>${content.subheadline || `Trusted local specialists serving the ${suburbName} area.`}</p>
+                <h3>${escapeHtml(content.headline || service + ' in ' + suburbName)}</h3>
+                <p>${escapeHtml(content.subheadline || 'Trusted local specialists serving the ' + suburbName + ' area.')}</p>
             </div>
-            <div class="preview-details">
-                <div class="preview-description">
-                    <h4>Top-Tier ${service} in ${suburbName}</h4>
-                    <p>${content.paragraph_1}</p>
-                    <p>${content.paragraph_2}</p>
-                </div>
-                <div class="preview-sidebar">
-                    <h4>Need Assistance?</h4>
-                    <p>Get a fast quote for services in ${suburbName}.</p>
-                    <a href="tel:${phone}" style="display: block; text-align: center; background-color: #6366f1; color: white; padding: 10px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px;">Get Quote</a>
-                </div>
+            <div style="padding:28px 24px;">
+                <h4 style="font-family:var(--font-heading);font-size:1.2rem;margin:0 0 12px;color:#111827;">${escapeHtml(service)} in ${escapeHtml(suburbName)}</h4>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">${escapeHtml(content.paragraph_1 || '')}</p>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">${escapeHtml(content.paragraph_2 || '')}</p>
+                ${servicesHTML ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">${servicesHTML}</div>` : ''}
+                ${faqHTML ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;"><h5 style="font-size:0.9rem;color:#111827;margin:0 0 12px;">Common Questions</h5>${faqHTML}</div>` : ''}
+                <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">${escapeHtml(content.cta_text || 'Get a Free Estimate')}</a>
             </div>
         </div>
     `;
@@ -191,6 +261,10 @@ function renderLivePreview(suburbName) {
 function setupTabs(suburbs) {
     const tabsContainer = document.getElementById('previewTabs');
     tabsContainer.innerHTML = '';
+
+    // Update preview title
+    const titleEl = document.getElementById('previewTitle');
+    if (titleEl) titleEl.textContent = 'Generated Preview';
 
     suburbs.forEach((suburb, index) => {
         const tab = document.createElement('span');
@@ -228,6 +302,12 @@ async function runGeneration() {
     // Check Paywall (Limit to 3 suburbs for free users)
     if (suburbs.length > 3 && !isProUser) {
         triggerPaywall(suburbs.length);
+        return;
+    }
+
+    // Check free generation limit
+    if (!isProUser && freeGenerationCount >= FREE_GENERATION_LIMIT) {
+        triggerExportLimit();
         return;
     }
 
@@ -301,6 +381,13 @@ function triggerZipDownload(name, service, phone, email, baseCity) {
         zip.file(filename, htmlCode);
     });
 
+    // Increment free generation count for non-pro users
+    if (!isProUser) {
+        freeGenerationCount++;
+        localStorage.setItem('geopage_free_count', freeGenerationCount.toString());
+        updateFreeTierUI();
+    }
+
     // Generate zip binary and trigger local download
     zip.generateAsync({ type: 'blob' }).then(blob => {
         const link = document.createElement('a');
@@ -317,6 +404,32 @@ function triggerZipDownload(name, service, phone, email, baseCity) {
             toast.classList.remove('active');
         }, 4000);
     });
+}
+
+function triggerExportLimit() {
+    const overlay = document.getElementById('loaderOverlay');
+    overlay.classList.remove('active');
+    triggerPaywall(0);
+}
+
+function updateFreeTierUI() {
+    const remaining = Math.max(0, FREE_GENERATION_LIMIT - freeGenerationCount);
+    const generateBtn = document.getElementById('generateBtn');
+    const stepTitle = document.querySelector('.input-panel .panel-header h2');
+    
+    if (!isProUser && generateBtn) {
+        if (remaining <= 0) {
+            generateBtn.innerHTML = 'Upgrade for Unlimited <i class="fa-solid fa-lock"></i>';
+            generateBtn.onclick = () => triggerPaywall(0);
+        } else {
+            generateBtn.innerHTML = `Generate Pages (${remaining} free left) <i class="fa-solid fa-wand-magic-sparkles"></i>`;
+        }
+    }
+
+    // Update panel header
+    if (!isProUser && stepTitle) {
+        stepTitle.innerHTML = `<span class="step-badge">1</span> Generate Deploy-Ready Pages`;
+    }
 }
 
 function openAuthModal(mode = 'login') {
@@ -338,9 +451,23 @@ function toggleAuthTab(mode) {
 
 function handleAuthSubmit(event, mode) {
     event.preventDefault();
-    alert(mode === 'login'
-        ? 'Login is ready for your auth provider integration.'
-        : 'Signup is ready for your auth provider integration.');
+    // Frontend placeholder - ready for Supabase integration
+    if (mode === 'signup') {
+        const email = document.getElementById('signup-email').value;
+        localStorage.setItem('geopage_user_email', email);
+        alert('Account created! Ready for Supabase auth integration.');
+    } else {
+        const email = document.getElementById('login-email').value;
+        localStorage.setItem('geopage_user_email', email);
+        alert('Signed in! Ready for Supabase auth integration.');
+    }
+    closeAuthModal();
+}
+
+function handleGoogleAuth() {
+    // Placeholder for Google OAuth - ready for Supabase integration
+    // When ready: supabase.auth.signInWithOAuth({ provider: 'google' })
+    alert('Google sign-in ready for Supabase integration.\n\nWhen connected, this will open Google OAuth.');
     closeAuthModal();
 }
 
@@ -355,39 +482,364 @@ function closeContactModal() {
 
 function handleContactSubmit(event) {
     event.preventDefault();
-    alert('Thanks! Your message has been noted. Connect this form to your email provider before launch.');
+    alert('Thanks! Your message has been noted. We will get back to you within 24 hours.');
     event.target.reset();
     closeContactModal();
 }
 
-function toggleChatWindow() {
-    document.getElementById('chatWidget').classList.toggle('active');
-}
-
-function handleChatKeyDown(event) {
-    if (event.key === 'Enter') {
-        sendChatMessage();
+function handleEmailCapture(event) {
+    event.preventDefault();
+    const email = document.getElementById('captureEmail').value;
+    if (email) {
+        localStorage.setItem('geopage_captured_email', email);
+        event.target.reset();
+        const btn = event.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Subscribed';
+        btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 3000);
     }
 }
 
-function sendChatMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    if (!message) return;
+// =============================================
+// LIVE REACTIVE PREVIEW SYSTEM
+// =============================================
 
-    appendChatBubble(message, 'user');
-    input.value = '';
+function initLivePreview() {
+    // Render initial example preview on page load
+    renderDefaultPreview();
 
-    setTimeout(() => {
-        appendChatBubble('For launch: add GROQ_API_KEY in Vercel, connect Stripe, then deploy. I can help with each step.', 'bot');
-    }, 250);
+    // Attach live input listeners
+    const businessName = document.getElementById('businessName');
+    const businessService = document.getElementById('businessService');
+    const baseCity = document.getElementById('baseCity');
+    const suburbs = document.getElementById('suburbs');
+
+    if (businessName) businessName.addEventListener('input', updateLivePreview);
+    if (businessService) businessService.addEventListener('input', updateLivePreview);
+    if (baseCity) baseCity.addEventListener('input', updateLivePreview);
+    if (suburbs) suburbs.addEventListener('input', updateLivePreview);
 }
 
-function appendChatBubble(message, type) {
-    const chatBody = document.getElementById('chatBody');
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${type}`;
-    bubble.textContent = message;
-    chatBody.appendChild(bubble);
-    chatBody.scrollTop = chatBody.scrollHeight;
+function renderDefaultPreview() {
+    const viewport = document.getElementById('previewViewport');
+    const browserUrl = document.getElementById('browserUrl');
+
+    browserUrl.textContent = 'https://apexplumbing.com/sugar-land';
+
+    const watermarkHTML = !isProUser ? `
+        <div style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:10px 20px;text-align:center;">
+            <span style="font-size:0.75rem;color:#9ca3af;">Generated with <a href="https://geopage.ai" style="color:#6366f1;text-decoration:none;font-weight:600;">GeoPage AI</a></span>
+        </div>
+    ` : '';
+
+    viewport.innerHTML = `
+        <div class="suburb-page-preview">
+            <div class="preview-header">
+                <span style="font-weight: 700;">Apex Plumbing Solutions</span>
+                <span style="background-color: #10b981; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call: (555) 123-4567</span>
+            </div>
+            <div class="preview-hero">
+                <h3>Emergency Plumbing in Sugar Land</h3>
+                <p>Your trusted local plumbing partner servicing the Sugar Land community with fast, reliable repairs.</p>
+            </div>
+            <div class="preview-details">
+                <div class="preview-description">
+                    <h4>Top-Tier Emergency Plumbing in Sugar Land</h4>
+                    <p>At Apex Plumbing Solutions, we are dedicated to providing high-quality, reliable emergency plumbing solutions to homeowners and businesses throughout Sugar Land. Our team of experienced professionals is fully equipped to handle jobs of all sizes.</p>
+                    <p>We understand that plumbing problems require fast solutions. That is why we offer prompt scheduling, upfront pricing, and guaranteed workmanship on every local service call in the Sugar Land area.</p>
+                </div>
+                <div class="preview-sidebar">
+                    <h4>Need Assistance?</h4>
+                    <p>Get a fast quote for plumbing services in Sugar Land.</p>
+                    <a href="tel:5551234567" style="display: block; text-align: center; background-color: #6366f1; color: white; padding: 10px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px;">Get Quote</a>
+                </div>
+            </div>
+            ${watermarkHTML}
+        </div>
+    `;
+    livePreviewReady = true;
+}
+
+function updateLivePreview() {
+    if (!livePreviewReady) return;
+
+    const name = document.getElementById('businessName').value.trim();
+    const service = document.getElementById('businessService').value.trim();
+    const baseCity = document.getElementById('baseCity').value.trim();
+    const suburbsRaw = document.getElementById('suburbs').value.trim();
+
+    // Get first suburb if available
+    const suburbs = suburbsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    const firstSuburb = suburbs[0] || '';
+
+    // Build dynamic values with defaults
+    const displayName = name || 'Apex Plumbing Solutions';
+    const displayService = service || 'Emergency Plumbing & Leak Repair';
+    const displaySuburb = firstSuburb || 'Sugar Land';
+    const displayCity = baseCity || 'Houston';
+
+    // Update browser URL bar
+    const browserUrl = document.getElementById('browserUrl');
+    const slug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const suburbSlug = displaySuburb.toLowerCase().replace(/\s+/g, '-');
+    browserUrl.textContent = `https://${slug}.com/${suburbSlug}`;
+
+    // Build the preview content
+    const viewport = document.getElementById('previewViewport');
+    const watermarkHTML = !isProUser ? `
+        <div style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:10px 20px;text-align:center;">
+            <span style="font-size:0.75rem;color:#9ca3af;">Generated with <a href="https://geopage.ai" style="color:#6366f1;text-decoration:none;font-weight:600;">GeoPage AI</a></span>
+        </div>
+    ` : '';
+
+    viewport.innerHTML = `
+        <div class="suburb-page-preview">
+            <div class="preview-header">
+                <span style="font-weight: 700;">${escapeHtml(displayName)}</span>
+                <span style="background-color: #10b981; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call Now</span>
+            </div>
+            <div class="preview-hero">
+                <h3>${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}</h3>
+                <p>Your trusted local ${escapeHtml(displayService.toLowerCase())} partner servicing the ${escapeHtml(displaySuburb)} community in the ${escapeHtml(displayCity)} area.</p>
+            </div>
+            <div class="preview-details">
+                <div class="preview-description">
+                    <h4>Professional ${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}, ${escapeHtml(displayCity)}</h4>
+                    <p>At ${escapeHtml(displayName)}, we deliver high-quality, reliable ${escapeHtml(displayService.toLowerCase())} to homes and businesses across ${escapeHtml(displaySuburb)}. Our experienced team handles jobs of every size with prompt scheduling and upfront pricing.</p>
+                    <p>We know ${escapeHtml(displayService.toLowerCase())} problems need fast solutions. That is why we offer same-day availability, transparent quotes, and guaranteed workmanship on every service call in the ${escapeHtml(displaySuburb)} area.</p>
+                </div>
+                <div class="preview-sidebar">
+                    <h4>Request a Quote</h4>
+                    <p>Fast estimates for ${escapeHtml(displayService.toLowerCase())} in ${escapeHtml(displaySuburb)}.</p>
+                    <a href="#" style="display: block; text-align: center; background-color: #6366f1; color: white; padding: 10px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px;">Get a Free Estimate</a>
+                </div>
+            </div>
+            ${watermarkHTML}
+        </div>
+    `;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// =============================================
+// SHOWCASE DEMO SYSTEM
+// =============================================
+
+const showcaseData = {
+    plumbing: {
+        title: 'Emergency Plumber in Sugar Land, TX',
+        url: 'https://apexplumbing.com/sugar-land',
+        header: { name: 'Apex Plumbing Solutions', phone: '(281) 555-0147' },
+        hero: {
+            headline: 'Fast Emergency Plumbing in Sugar Land, TX',
+            sub: 'Licensed plumbers serving Sugar Land homeowners with 24/7 emergency drain repair, leak detection, and water heater services.'
+        },
+        content: {
+            heading: 'Professional Emergency Plumbing Services in Sugar Land',
+            p1: 'When a pipe bursts at midnight or your water heater fails on a Sunday morning, you need a plumbing team that answers the phone. Apex Plumbing Solutions provides emergency plumbing repair to homeowners across Sugar Land, including neighborhoods near Town Square, New Territory, and Telfair.',
+            p2: 'Our licensed technicians arrive with fully stocked trucks, ready to diagnose and repair burst pipes, clogged drains, sewer line issues, and water heater failures. We carry the parts to complete most jobs on the first visit, so you are not waiting days for a follow-up.',
+            p3: 'Sugar Land homes face unique plumbing challenges: hard water buildup stressing fixtures, aging polybutylene pipes in older subdivisions, and tree root intrusion along the Oyster Creek corridor. We know these patterns and plan accordingly.'
+        },
+        services: ['Emergency Leak Repair', 'Drain Cleaning & Clearing', 'Water Heater Installation', 'Sewer Line Inspection'],
+        process_steps: [
+            { step: 1, description: 'Call or book online and we confirm your appointment within the hour.' },
+            { step: 2, description: 'A licensed technician arrives, diagnoses the issue, and provides a upfront quote before any work begins.' },
+            { step: 3, description: 'We complete the repair, test the system, and clean up before we leave.' }
+        ],
+        sidebar: {
+            heading: 'Request an Estimate',
+            text: 'Need fast plumbing help in Sugar Land? Call now for same-day service or request a free estimate online.',
+            cta: 'Call (281) 555-0147'
+        },
+        faq: [
+            { q: 'Do you provide emergency plumbing in Sugar Land after hours?', a: 'Yes. Our on-call team handles emergencies 24 hours a day, 7 days a week, including weekends and holidays throughout the Sugar Land area.' },
+            { q: 'Which Sugar Land neighborhoods do you serve?', a: 'We serve all Sugar Land neighborhoods including Town Square, New Territory, Telfair, Highlands, and Oyster Creek. Our technicians are based locally for fast response times.' },
+            { q: 'How quickly can you arrive for a plumbing emergency?', a: 'Most emergency calls in Sugar Land receive a technician within 60 minutes. We prioritize active leaks, sewer backups, and no-hot-water situations.' }
+        ],
+        cta_text: 'Get a Free Estimate',
+        footer: 'Apex Plumbing Solutions | Licensed & Insured | Sugar Land, TX'
+    },
+    hvac: {
+        title: 'AC Repair in Scottsdale Ranch, AZ',
+        url: 'https://coolbreezehvac.com/scottsdale-ranch',
+        header: { name: 'Cool Breeze HVAC', phone: '(480) 555-0289' },
+        hero: {
+            headline: 'Reliable AC Repair in Scottsdale Ranch, AZ',
+            sub: 'Fast air conditioning repair and maintenance for Scottsdale Ranch homes. Same-day service when Arizona heat hits hardest.'
+        },
+        content: {
+            heading: 'Expert AC Repair and Cooling Services in Scottsdale Ranch',
+            p1: 'Scottsdale Ranch summers push AC systems to their limits. When your unit struggles to keep up with 110-degree days, Cool Breeze HVAC delivers same-day diagnostics and repair to get your cooling back on track. We service all major brands including Carrier, Trane, Lennox, and Rheem.',
+            p2: 'Our NATE-certified technicians handle refrigerant leaks, compressor failures, capacitor replacements, and airflow problems. We stock the most common parts on our trucks, so most repairs are completed in a single visit.',
+            p3: 'Scottsdale Ranch homes often experience uneven cooling due to long duct runs and east-facing windows that absorb afternoon heat. We address these issues at the system level, not just the symptom.'
+        },
+        services: ['AC Diagnostics & Repair', 'Refrigerant Leak Service', 'Seasonal Maintenance Plans', 'Emergency Cooling Service'],
+        process_steps: [
+            { step: 1, description: 'Schedule online or by phone. We confirm same-day availability for urgent cooling issues.' },
+            { step: 2, description: 'Our NATE-certified technician runs a full system diagnostic and presents a clear repair recommendation.' },
+            { step: 3, description: 'We complete the repair with quality parts, test performance, and provide a written warranty.' }
+        ],
+        sidebar: {
+            heading: 'Schedule a Diagnostic',
+            text: 'Not sure what is wrong? Our technicians run a full system diagnostic to identify the issue before quoting any work.',
+            cta: 'Call (480) 555-0289'
+        },
+        faq: [
+            { q: 'How fast can you respond to an AC emergency in Scottsdale Ranch?', a: 'We offer same-day emergency AC service for Scottsdale Ranch residents. During peak summer, we recommend calling early in the day for the fastest appointment.' },
+            { q: 'Do you offer maintenance plans for Scottsdale Ranch homes?', a: 'Yes. Our seasonal maintenance plan includes two tune-ups per year, priority scheduling, and discounted repairs. It is the best way to avoid unexpected breakdowns in Arizona heat.' },
+            { q: 'What AC brands do you service?', a: 'We service all major brands including Carrier, Trane, Lennox, Rheem, Goodman, and Bryant. Our technicians are factory-trained on most residential systems.' }
+        ],
+        cta_text: 'Book Same-Day Service',
+        footer: 'Cool Breeze HVAC | NATE Certified | Scottsdale, AZ'
+    },
+    roofing: {
+        title: 'Storm Roof Repair in Frisco, TX',
+        url: 'https://stalwartroofing.com/frisco',
+        header: { name: 'Stalwart Roofing', phone: '(214) 555-0312' },
+        hero: {
+            headline: 'Storm Damage Roof Repair in Frisco, TX',
+            sub: 'Licensed roofing contractors serving Frisco homeowners with hail damage repair, storm inspections, and insurance claim support.'
+        },
+        content: {
+            heading: 'Storm Damage Roofing Repair and Inspection in Frisco',
+            p1: 'North Texas storms produce hail, high winds, and driving rain that damage shingles, flashing, and gutters. Stalwart Roofing provides comprehensive storm damage assessment and repair to Frisco homeowners, documenting damage for insurance claims and restoring roof integrity.',
+            p2: 'After a storm, hidden damage can lead to leaks weeks or months later. Our inspection process covers the entire roof surface, valleys, flashing points, and attic ventilation. We photograph everything and provide a detailed report you can submit directly to your insurance adjuster.',
+            p3: 'Frisco neighborhoods near PGA Parkway and the Dallas North Tollway corridor see frequent hail activity. We know the common damage patterns in these areas and what insurance carriers look for in a legitimate claim.'
+        },
+        services: ['Hail Damage Repair', 'Storm Roof Inspection', 'Insurance Claim Support', 'Emergency Tarping'],
+        process_steps: [
+            { step: 1, description: 'Call after a storm and we schedule a free on-site inspection within 48 hours.' },
+            { step: 2, description: 'We document all damage with photos, provide a detailed report, and coordinate with your insurance adjuster.' },
+            { step: 3, description: 'Once approved, we complete the repair using quality materials and back it with a workmanship warranty.' }
+        ],
+        sidebar: {
+            heading: 'Free Storm Inspection',
+            text: 'Suspected storm damage? We offer free roof inspections for Frisco homeowners. No obligation, no pressure.',
+            cta: 'Call (214) 555-0312'
+        },
+        faq: [
+            { q: 'Should I file an insurance claim for roof storm damage?', a: 'If you see missing shingles, dents in gutters, or find granules in your downspouts, it is worth filing a claim. We document everything and can meet your adjuster on-site.' },
+            { q: 'How long does a typical storm repair take?', a: 'Most residential storm repairs in Frisco are completed in 1-3 days depending on the extent of damage and material availability. We communicate timelines clearly before starting.' },
+            { q: 'Do you work with insurance companies directly?', a: 'Yes. We have experience working with all major insurance carriers and can provide the documentation, photos, and scope of work your adjuster needs to process the claim efficiently.' }
+        ],
+        cta_text: 'Schedule Free Inspection',
+        footer: 'Stalwart Roofing | Licensed & Insured | Frisco, TX'
+    },
+    dental: {
+        title: 'Family Dentist in Lakewood, CO',
+        url: 'https://lakewoodfamilydental.com',
+        header: { name: 'Lakewood Family Dental', phone: '(303) 555-0178' },
+        hero: {
+            headline: 'Trusted Family Dentist in Lakewood, CO',
+            sub: 'Gentle dental care for the whole family. Preventive cleanings, restorative work, and cosmetic dentistry in Lakewood, Colorado.'
+        },
+        content: {
+            heading: 'Family Dental Care in Lakewood, CO',
+            p1: 'Lakewood Family Dental provides comprehensive dental care for patients of all ages, from childrens first visits to adult preventive care and cosmetic treatments. Our Lakewood office is designed to feel comfortable and welcoming, not clinical and intimidating.',
+            p2: 'We focus on preventive dentistry because catching issues early saves time, money, and discomfort. Our hygiene team uses digital X-rays with minimal radiation, intraoral cameras, and gentle cleaning techniques to keep your teeth healthy between visits.',
+            p3: 'Lakewood families appreciate that we handle everything in one office: routine cleanings, fillings, crowns, teeth whitening, and emergency dental care. No referrals across town, no unfamiliar offices, just consistent care from a team that knows your history.'
+        },
+        services: ['Preventive Cleanings', 'Restorative Dentistry', 'Teeth Whitening', 'Emergency Dental Care'],
+        process_steps: [
+            { step: 1, description: 'Book online or by phone. We offer morning, evening, and Saturday appointments for families.' },
+            { step: 2, description: 'Your first visit includes a comprehensive exam, digital X-rays, and a personalized treatment plan.' },
+            { step: 3, description: 'We handle everything in-house, from cleanings to crowns, so you never need referrals across town.' }
+        ],
+        sidebar: {
+            heading: 'Book Your Visit',
+            text: 'New patients welcome. We accept most insurance plans and offer flexible scheduling for families.',
+            cta: 'Call (303) 555-0178'
+        },
+        faq: [
+            { q: 'Do you accept new patients and children?', a: 'Absolutely. We welcome patients of all ages and recommend children visit starting at age one or when their first tooth appears.' },
+            { q: 'What insurance plans do you accept?', a: 'We accept most major dental insurance plans including Delta Dental, Cigna, MetLife, and Aetna. Our team will verify your benefits before your appointment.' },
+            { q: 'How often should I schedule dental checkups?', a: 'We recommend a cleaning and exam every six months for most patients. Some conditions may require more frequent visits, which we will discuss at your appointment.' }
+        ],
+        cta_text: 'Book Your Appointment',
+        footer: 'Lakewood Family Dental | Accepting New Patients | Lakewood, CO'
+    }
+};
+
+function showcaseDemo(niche) {
+    const data = showcaseData[niche];
+    if (!data) return;
+
+    const container = document.getElementById('showcasePreview');
+    const title = document.getElementById('showcaseTitle');
+    const url = document.getElementById('showcaseUrl');
+    const viewport = document.getElementById('showcaseViewport');
+
+    title.textContent = data.title;
+    url.textContent = data.url;
+
+    const servicesHTML = (data.services || []).map(s => 
+        `<span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${s}</span>`
+    ).join('');
+
+    const processHTML = (data.process_steps || []).map(step => `
+        <div style="flex:1;text-align:center;">
+            <div style="width:40px;height:40px;background:#6366f1;color:white;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;margin-bottom:8px;">${step.step}</div>
+            <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.5;">${step.description}</p>
+        </div>
+    `).join('');
+
+    const faqHTML = data.faq.map(f => `
+        <div class="faq-item">
+            <h5>${f.q}</h5>
+            <p>${f.a}</p>
+        </div>
+    `).join('');
+
+    viewport.innerHTML = `
+        <div class="preview-header">
+            <span style="font-weight: 700;">${data.header.name}</span>
+            <a href="tel:${data.header.phone.replace(/[^\d]/g, '')}" style="background-color: #10b981; padding: 8px 16px; border-radius: 5px; font-size: 0.85rem; font-weight: 600; color: white; text-decoration: none;">Call: ${data.header.phone}</a>
+        </div>
+        <div class="preview-hero">
+            <h3>${data.hero.headline}</h3>
+            <p>${data.hero.sub}</p>
+        </div>
+        <div class="preview-content-grid">
+            <div class="preview-content">
+                <h4>${data.content.heading}</h4>
+                <p>${data.content.p1}</p>
+                <p>${data.content.p2}</p>
+                <p>${data.content.p3}</p>
+                ${servicesHTML ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;">${servicesHTML}</div>` : ''}
+            </div>
+            <div class="preview-sidebar-card">
+                <h4>${data.sidebar.heading}</h4>
+                <p>${data.sidebar.text}</p>
+                <a href="tel:${data.sidebar.cta.match(/\d+/)?.[0] || ''}">${data.sidebar.cta}</a>
+            </div>
+        </div>
+        ${processHTML ? `<div style="background:#f8fafc;padding:30px;border-top:1px solid #e5e7eb;"><h4 style="text-align:center;margin:0 0 20px;color:#111827;font-size:1.1rem;">How It Works</h4><div style="display:flex;gap:24px;max-width:900px;margin:0 auto;">${processHTML}</div></div>` : ''}
+        <div class="preview-faq">
+            <h4>Frequently Asked Questions</h4>
+            ${faqHTML}
+        </div>
+        <div style="background:linear-gradient(135deg,#1e293b,#0f172a);color:white;text-align:center;padding:40px 20px;">
+            <h4 style="color:white;margin:0 0 8px;font-size:1.2rem;">Ready to Get Started?</h4>
+            <p style="color:#cbd5e1;margin:0 0 16px;font-size:0.95rem;">Contact ${data.header.name} today.</p>
+            <a href="tel:${data.header.phone.replace(/[^\d]/g, '')}" style="display:inline-block;background:#10b981;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:700;">${data.cta_text || 'Contact Us'}</a>
+        </div>
+        <div class="preview-footer">
+            ${data.footer} | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+        </div>
+    `;
+
+    container.style.display = 'block';
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function closeShowcase() {
+    document.getElementById('showcasePreview').style.display = 'none';
 }
