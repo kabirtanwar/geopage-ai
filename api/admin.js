@@ -18,6 +18,12 @@ function writeJSON(filename, data) {
     fs.writeFileSync(path.join(DATA_DIR, filename), JSON.stringify(data, null, 2));
 }
 
+function parseBody(req) {
+    if (!req.body) return {};
+    if (typeof req.body === 'string') { try { return JSON.parse(req.body); } catch { return {}; } }
+    return req.body;
+}
+
 function getMetrics() {
     const metrics = readJSON('metrics.json') || { touches_sent: 0, replies_received: 0, trials_given: 0, payments_received: 0, revenue: 0, by_channel: {}, by_niche: {}, by_variant: {}, daily_history: [] };
     const outreach = readJSON('outreach.json') || [];
@@ -217,17 +223,17 @@ module.exports = async (req, res) => {
                 break;
             case 'add-lead':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
-                const body = JSON.parse(req.body || '{}');
+                const body = parseBody(req);
                 res.status(200).json(addLead(body));
                 break;
             case 'log-outreach':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
-                const outBody = JSON.parse(req.body || '{}');
+                const outBody = parseBody(req);
                 res.status(200).json(logOutreach(outBody));
                 break;
             case 'log-reply':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
-                const replyBody = JSON.parse(req.body || '{}');
+                const replyBody = parseBody(req);
                 res.status(200).json(logReply(replyBody.outreach_id, replyBody.sentiment));
                 break;
             default:

@@ -16,6 +16,12 @@ function writeJSON(filename, data) {
     fs.writeFileSync(path.join(DATA_DIR, filename), JSON.stringify(data, null, 2));
 }
 
+function parseBody(req) {
+    if (!req.body) return {};
+    if (typeof req.body === 'string') { try { return JSON.parse(req.body); } catch { return {}; } }
+    return req.body;
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,7 +50,7 @@ module.exports = async (req, res) => {
 
             case 'generate':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
-                const genBody = JSON.parse(req.body || '{}');
+                const genBody = parseBody(req);
                 const leads = readJSON('leads.json') || [];
                 const targetLeads = genBody.lead_ids
                     ? leads.filter(l => genBody.lead_ids.includes(l.id))
@@ -56,7 +62,7 @@ module.exports = async (req, res) => {
 
             case 'execute':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
-                const execBody = JSON.parse(req.body || '{}');
+                const execBody = parseBody(req);
                 // Log each message as sent
                 const logFile = readJSON('outreach.json') || [];
                 for (const msg of (execBody.messages || [])) {
