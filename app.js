@@ -1,13 +1,13 @@
 // =============================================
 // CONFIGURATION
 // =============================================
-const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
+const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.db.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
 const FREE_GENERATION_LIMIT = 3;
 const LEMON_SQUEEZY_URL = 'https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1';
 
 // Initialize Supabase
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // State Variables
 let currentStep = 1;
@@ -32,13 +32,13 @@ function track(event, props = {}) {
 // AUTH SYSTEM
 // =============================================
 async function initAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await db.auth.getSession();
     if (session) {
         currentUser = session.user;
         await onAuthSuccess(session.user);
     }
 
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    db.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
             currentUser = session.user;
             await onAuthSuccess(session.user);
@@ -125,12 +125,12 @@ async function handleAuthSubmit(event, mode) {
 
     let result;
     if (mode === 'signup') {
-        result = await supabase.auth.signUp({
+        result = await db.auth.signUp({
             email, password,
             options: { data: { full_name: name } }
         });
     } else {
-        result = await supabase.auth.signInWithPassword({ email, password });
+        result = await db.auth.signInWithPassword({ email, password });
     }
 
     if (result.error) {
@@ -145,7 +145,7 @@ async function handleAuthSubmit(event, mode) {
 
 async function handleGoogleAuth() {
     track('auth_google_clicked');
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await db.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin }
     });
@@ -156,7 +156,7 @@ async function handleGoogleAuth() {
 }
 
 async function handleLogout() {
-    await supabase.auth.signOut();
+    await db.auth.signOut();
     track('user_signed_out');
     toggleUserMenu();
 }
@@ -581,7 +581,7 @@ async function runGeneration() {
     // Get auth token for server-side tracking
     let authToken = null;
     if (currentUser) {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await db.auth.getSession();
         authToken = session?.access_token || null;
     }
 
