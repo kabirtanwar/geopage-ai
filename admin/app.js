@@ -1,6 +1,29 @@
 // Admin Dashboard — Command Center Logic
 const API_BASE = '/api/admin';
 const OUTREACH_API = '/api/outreach';
+const ADMIN_EMAILS = (typeof ADMIN_EMAILS_CONFIG !== 'undefined') ? ADMIN_EMAILS_CONFIG : [];
+
+// Auth Gate
+(async function checkAuth() {
+    try {
+        const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) { window.location.href = '/'; return; }
+        const email = (session.user.email || '').toLowerCase();
+        if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(email)) { window.location.href = '/'; return; }
+        window._adminUser = session.user;
+        window._adminToken = session.access_token;
+        document.getElementById('adminEmail').textContent = email;
+    } catch { window.location.href = '/'; }
+})();
+
+function authHeaders() {
+    const h = { 'Content-Type': 'application/json' };
+    if (window._adminToken) h['Authorization'] = `Bearer ${window._adminToken}`;
+    return h;
+}
 
 // Navigation
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -26,22 +49,26 @@ async function loadSection(section) {
 }
 
 async function apiGet(route) {
-    const res = await fetch(`${API_BASE}?route=${route}`);
+    const res = await fetch(`${API_BASE}?route=${route}`, { headers: authHeaders() });
+    if (res.status === 401) { window.location.href = '/'; return {}; }
     return res.json();
 }
 
 async function apiPost(route, data) {
     const res = await fetch(`${API_BASE}?route=${route}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(data)
     });
+    if (res.status === 401) { window.location.href = '/'; return {}; }
     return res.json();
 }
 
 // Overview
 async function loadOverview() {
     const metrics = await apiGet('metrics');
+    if (!metrics || metrics.error) return;
+
     document.getElementById('totalTouches').textContent = metrics.total_touches || metrics.touches_sent || 0;
     document.getElementById('replyRate').textContent = metrics.reply_rate || '0%';
     document.getElementById('trialRate').textContent = metrics.trial_rate || '0%';
@@ -53,18 +80,27 @@ async function loadOverview() {
     const channelDiv = document.getElementById('channelBreakdown');
     channelDiv.innerHTML = '';
     const channels = metrics.channel_breakdown || {};
-    for (const [ch, data] of Object.entries(channels)) {
-        const rate = data.sent > 0 ? (data.replied / data.sent * 100).toFixed(0) : 0;
-        channelDiv.innerHTML += `<div class="breakdown-item"><div class="label">${ch}</div><div class="value">${data.sent}</div><div class="label">${rate}% reply</div></div>`;
+    if (Object.keys(channels).length === 0) {
+        channelDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">No channel data yet. Start outreach to see performance.</div></div>';
+    } else {
+        for (const [ch, data] of Object.entries(channels)) {
+            const rate = data.sent > 0 ? (data.replied / data.sent * 100).toFixed(0) : 0;
+            channelDiv.innerHTML += `<div class="breakdown-item"><div class="label">${ch}</div><div class="value">${data.sent}</div><div class="label">${rate}% reply</div></div>`;
+        }
     }
 
     // Tier breakdown
     const tierDiv = document.getElementById('tierBreakdown');
     tierDiv.innerHTML = '';
     const tiers = metrics.tier_breakdown || {};
-    const tierColors = { hot: '#f85149', warm: '#f0883e', cool: '#d29922', cold: '#8b949e' };
+    const tierColors = { hot: 'var(--hot)', warm: 'var(--warm)', cool: 'var(--cool)', cold: 'var(--cold)' };
     for (const [tier, count] of Object.entries(tiers)) {
-        tierDiv.innerHTML += `<div class="breakdown-item"><div class="label" style="color:${tierColors[tier]}">${tier.toUpperCase()}</div><div class="value">${count}</div></div>`;
+        if (count > 0) {
+            tierDiv.innerHTML += `<div class="breakdown-item"><div class="label" style="color:${tierColors[tier]}">${tier.toUpperCase()}</div><div class="value">${count}</div></div>`;
+        }
+    }
+    if (tierDiv.innerHTML === '') {
+        tierDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div><div class="empty-state-text">No leads scored yet.</div></div>';
     }
 }
 
@@ -76,18 +112,42 @@ async function loadLeads() {
     if (tier) url += `&tier=${tier}`;
     if (status) url += `&status=${status}`;
 
-    const leads = await fetch(url).then(r => r.json());
+    const leads = await fetch(url, { headers: authHeaders() }).then(r => r.json());
+    if (leads.error === 'Unauthorized') { window.location.href = '/'; return; }
+
     const tbody = document.getElementById('leadsBody');
     tbody.innerHTML = '';
+
+    if (!leads || leads.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">No leads found. Add leads via the API or run lead scoring.</td></tr>';
+        return;
+    }
+
+    const tierStyles = {
+        hot: 'color:var(--hot);font-weight:600',
+        warm: 'color:var(--warm);font-weight:600',
+        cool: 'color:var(--cool);font-weight:600',
+        cold: 'color:var(--cold);font-weight:500'
+    };
+
+    const statusStyles = {
+        new: 'background:var(--accent-glow);color:var(--accent);padding:3px 8px;border-radius:4px;font-size:0.75rem',
+        contacted: 'background:rgba(249,115,22,0.1);color:var(--warm);padding:3px 8px;border-radius:4px;font-size:0.75rem',
+        replied: 'background:rgba(34,197,94,0.1);color:var(--success);padding:3px 8px;border-radius:4px;font-size:0.75rem',
+        trial: 'background:rgba(234,179,8,0.1);color:var(--cool);padding:3px 8px;border-radius:4px;font-size:0.75rem',
+        converted: 'background:rgba(34,197,94,0.15);color:var(--success);padding:3px 8px;border-radius:4px;font-size:0.75rem;font-weight:600'
+    };
+
     for (const lead of leads.slice(0, 100)) {
-        const tierClass = { hot: 'color:#f85149', warm: 'color:#f0883e', cool: 'color:#d29922', cold: 'color:#8b949e' };
+        const tierClass = tierStyles[lead.tier] || tierStyles.cold;
+        const statusClass = statusStyles[lead.status] || statusStyles.new;
         tbody.innerHTML += `<tr>
-            <td>${lead.name || lead.handle || 'Unknown'}</td>
+            <td style="font-weight:500;color:var(--text-primary)">${lead.name || lead.handle || 'Unknown'}</td>
             <td>${lead.platform || '-'}</td>
             <td>${lead.niche || '-'}</td>
-            <td>${lead.pain_score || 0}</td>
-            <td style="${tierClass[lead.tier] || ''}">${(lead.tier || 'cold').toUpperCase()}</td>
-            <td>${lead.status || 'new'}</td>
+            <td style="font-family:'SF Mono',monospace;font-size:0.8rem">${lead.pain_score || 0}</td>
+            <td style="${tierClass}">${(lead.tier || 'cold').toUpperCase()}</td>
+            <td><span style="${statusClass}">${lead.status || 'new'}</span></td>
             <td><button class="btn btn-sm btn-secondary" onclick="logLeadReply('${lead.id}')">Mark Replied</button></td>
         </tr>`;
     }
@@ -104,17 +164,37 @@ async function logLeadReply(leadId) {
 
 // Outreach
 async function loadOutreach() {
-    const status = await fetch(`${OUTREACH_API}?route=status`).then(r => r.json());
+    const status = await fetch(`${OUTREACH_API}?route=status`, { headers: authHeaders() }).then(r => r.json());
+    if (status.error === 'Unauthorized') { window.location.href = '/'; return; }
     document.getElementById('todaySent').textContent = status.today_sent || 0;
     document.getElementById('totalSent').textContent = status.total_sent || 0;
     document.getElementById('totalReplies').textContent = status.total_replies || 0;
     document.getElementById('totalTrials').textContent = status.total_trials || 0;
+
+    const logDiv = document.getElementById('outreachLog');
+    if (!status.total_sent || status.total_sent === 0) {
+        logDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📬</div><div class="empty-state-text">No outreach sent yet. Generate a batch from the Actions tab.</div></div>';
+    }
 }
 
 // Showcases
 async function loadShowcases() {
-    // Placeholder - will be populated with actual showcase data
-    document.getElementById('showcaseList').innerHTML = '<p style="color:#8b949e">No showcases generated yet. Click "Generate Showcase Batch" to create proof assets.</p>';
+    const data = await apiGet('showcases');
+    const listDiv = document.getElementById('showcaseList');
+    listDiv.innerHTML = '';
+
+    if (!data || data.error || !data.length) {
+        listDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎨</div><div class="empty-state-text">No showcases generated yet. Click "Generate Showcase Batch" to create proof assets.</div></div>';
+        return;
+    }
+
+    for (const s of data) {
+        listDiv.innerHTML += `<div class="showcase-item">
+            <div class="niche">${s.niche || 'general'}</div>
+            <div class="suburb">${s.suburb || 'Unknown'}</div>
+            <div class="style">${s.style || 'default'} · ${s.status || 'pending'}</div>
+        </div>`;
+    }
 }
 
 // Optimization
@@ -122,9 +202,12 @@ async function loadOptimization() {
     const recs = await apiGet('recommendations');
     const recDiv = document.getElementById('recommendations');
     recDiv.innerHTML = '';
-    if (recs.length === 0) {
-        recDiv.innerHTML = '<p style="color:#8b949e">No recommendations yet. Need more data.</p>';
+
+    if (!recs || recs.length === 0) {
+        recDiv.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚡</div><div class="empty-state-text">No recommendations yet. Need more outreach data for optimization.</div></div>';
+        return;
     }
+
     for (const rec of recs) {
         recDiv.innerHTML += `<div class="rec-item ${rec.priority}"><div class="rec-text">${rec.text}</div><div class="rec-action">${rec.action}</div></div>`;
     }
@@ -161,7 +244,7 @@ document.getElementById('generateOutreach').addEventListener('click', async () =
     logAction('Generating outreach batch...');
     const result = await fetch(OUTREACH_API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify({ route: 'generate', count: 50 })
     }).then(r => r.json());
     logAction(`Generated ${result.count || 0} messages.`);
@@ -181,11 +264,20 @@ document.getElementById('exportMetrics').addEventListener('click', async () => {
 document.getElementById('killSwitch').addEventListener('click', () => {
     if (confirm('KILL SWITCH: This will pause all automated outreach. Continue?')) {
         localStorage.setItem('geopage_kill_switch', 'true');
-        document.getElementById('statusBadge').textContent = '● PAUSED';
-        document.getElementById('statusBadge').style.color = '#f85149';
+        document.getElementById('statusBadge').textContent = 'System Paused';
+        document.getElementById('statusBadge').style.color = 'var(--danger)';
         logAction('KILL SWITCH ACTIVATED. All outreach paused.');
+        showToast('Kill switch activated', 'error');
     }
 });
+
+// Toast notifications
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} active`;
+    setTimeout(() => toast.classList.remove('active'), 3000);
+}
 
 // Action log
 function logAction(message) {
@@ -194,6 +286,7 @@ function logAction(message) {
     entry.className = 'log-entry';
     entry.innerHTML = `<span class="timestamp">${new Date().toLocaleTimeString()}</span> ${message}`;
     log.prepend(entry);
+    showToast(message);
 }
 
 // Auto-refresh overview every 30 seconds

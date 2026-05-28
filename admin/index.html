@@ -12,18 +12,46 @@
     <div class="admin-layout">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1>Command Center</h1>
-                <span class="status-badge" id="statusBadge">● Online</span>
+                <div class="sidebar-brand">
+                    <div class="sidebar-logo">G</div>
+                    <span class="sidebar-title">GeoPage AI</span>
+                </div>
+                <div class="status-badge" id="statusBadge">System Online</div>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="overview">Overview</a>
-                <a href="#" class="nav-item" data-section="leads">Leads</a>
-                <a href="#" class="nav-item" data-section="outreach">Outreach</a>
-                <a href="#" class="nav-item" data-section="showcases">Showcases</a>
-                <a href="#" class="nav-item" data-section="optimization">Optimization</a>
-                <a href="#" class="nav-item" data-section="actions">Actions</a>
+                <div class="nav-section-label">Command</div>
+                <a href="#" class="nav-item active" data-section="overview">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Overview
+                </a>
+                <a href="#" class="nav-item" data-section="leads">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Leads
+                </a>
+                <a href="#" class="nav-item" data-section="outreach">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    Outreach
+                </a>
+                <div class="nav-section-label">Assets</div>
+                <a href="#" class="nav-item" data-section="showcases">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    Showcases
+                </a>
+                <a href="#" class="nav-item" data-section="optimization">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Optimization
+                </a>
+                <div class="nav-section-label">System</div>
+                <a href="#" class="nav-item" data-section="actions">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Actions
+                </a>
             </nav>
             <div class="sidebar-footer">
+                <div class="admin-user">
+                    <div class="admin-avatar" id="adminAvatar">A</div>
+                    <span class="admin-email" id="adminEmail">Loading...</span>
+                </div>
                 <button class="btn btn-danger" id="killSwitch">Kill Switch</button>
             </div>
         </aside>
@@ -123,7 +151,22 @@
         </main>
     </div>
 
+    <div class="toast" id="toast"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const ADMIN_EMAILS_CONFIG = [];
+    </script>
     <script src="app.js"></script>
+    <script>
+        const observer = new MutationObserver(() => {
+            const emailEl = document.getElementById('adminEmail');
+            const avatarEl = document.getElementById('adminAvatar');
+            if (emailEl && emailEl.textContent && emailEl.textContent !== 'Loading...' && emailEl.textContent.includes('@')) {
+                avatarEl.textContent = emailEl.textContent[0].toUpperCase();
+            }
+        });
+        observer.observe(document.getElementById('adminEmail') || document.body, { childList: true, characterData: true, subtree: true });
+    </script>
 </body>
 </html>
