@@ -1,7 +1,7 @@
 // =============================================
 // CONFIGURATION
 // =============================================
-const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.db.co';
+const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
 const FREE_GENERATION_LIMIT = 3;
 const LEMON_SQUEEZY_URL = 'https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1';
@@ -58,7 +58,7 @@ async function onAuthSuccess(user) {
 
     // Check if user is paid (handle missing table gracefully)
     try {
-        const { data } = await supabase
+        const { data } = await db
             .from('user_subscriptions')
             .select('status')
             .eq('user_id', user.id)
@@ -187,7 +187,7 @@ async function refreshGenerationCount() {
         return;
     }
     try {
-        const { data } = await supabase
+        const { data } = await db
             .from('user_usage')
             .select('generation_count')
             .eq('user_id', currentUser.id)
@@ -206,7 +206,7 @@ async function incrementGenerationCount() {
         return;
     }
     try {
-        const { data } = await supabase
+        const { data } = await db
             .from('user_usage')
             .select('generation_count')
             .eq('user_id', currentUser.id)
@@ -214,12 +214,12 @@ async function incrementGenerationCount() {
             .maybeSingle();
 
         if (data) {
-            await supabase
+            await db
                 .from('user_usage')
                 .update({ generation_count: data.generation_count + 1, updated_at: new Date().toISOString() })
                 .eq('user_id', currentUser.id);
         } else {
-            await supabase
+            await db
                 .from('user_usage')
                 .insert({ user_id: currentUser.id, generation_count: 1 });
         }
