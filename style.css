@@ -2004,7 +2004,13 @@ textarea:focus {
 /* Lemon Squeezy overlay z-index fix */
 .lemonsqueezy-overlay,
 .lemonode-overlay,
-[data-lemonode] {
+[data-lemonode],
+.lemon-modal,
+.lemonsqueezy-checkout,
+#lemonsqueezy-overlay,
+.lemonsqueezy__overlay,
+div[class*="lemonsqueezy"],
+div[class*="lemon"] {
     z-index: 200 !important;
 }
 

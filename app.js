@@ -56,16 +56,21 @@ async function onAuthSuccess(user) {
     closeAuthModal();
     updateNavForAuth(user);
 
-    // Check if user is paid
-    const { data } = await supabase
-        .from('user_subscriptions')
-        .select('status')
-        .eq('user_id', user.id)
-        .single();
+    // Check if user is paid (handle missing table gracefully)
+    try {
+        const { data } = await supabase
+            .from('user_subscriptions')
+            .select('status')
+            .eq('user_id', user.id)
+            .limit(1)
+            .maybeSingle();
 
-    if (data && data.status === 'active') {
-        isProUser = true;
-        watermarkEnabled = false;
+        if (data && data.status === 'active') {
+            isProUser = true;
+            watermarkEnabled = false;
+        }
+    } catch (e) {
+        // Table may not exist yet, continue gracefully
     }
 
     // Get generation count from server
@@ -104,7 +109,7 @@ function updateNavForAuth(user) {
 
 function toggleUserMenu() {
     const menu = document.getElementById('userMenu');
-    menu.classList.toggle('open');
+    if (menu) menu.classList.toggle('open');
 }
 
 async function handleAuthSubmit(event, mode) {
@@ -156,12 +161,21 @@ async function handleLogout() {
     toggleUserMenu();
 }
 
-// Click outside to close user menu
+// Click outside to close user menu and modals
 document.addEventListener('click', (e) => {
     const menu = document.getElementById('userMenu');
     if (menu && !menu.contains(e.target)) {
         menu.classList.remove('open');
     }
+});
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.classList.remove('active');
+        }
+    });
 });
 
 // =============================================
@@ -177,7 +191,8 @@ async function refreshGenerationCount() {
             .from('user_usage')
             .select('generation_count')
             .eq('user_id', currentUser.id)
-            .single();
+            .limit(1)
+            .maybeSingle();
         freeGenerationCount = data ? data.generation_count : 0;
     } catch {
         freeGenerationCount = 0;
@@ -195,7 +210,8 @@ async function incrementGenerationCount() {
             .from('user_usage')
             .select('generation_count')
             .eq('user_id', currentUser.id)
-            .single();
+            .limit(1)
+            .maybeSingle();
 
         if (data) {
             await supabase
@@ -227,10 +243,10 @@ window.addEventListener('load', async () => {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 
-    // Initialize auth (checks session, loads user state)
-    await initAuth();
+    // Initialize auth (non-blocking — don't await)
+    initAuth().catch(e => console.warn('Auth init error:', e));
 
-    // Initialize Live Reactive Preview
+    // Initialize Live Reactive Preview IMMEDIATELY
     initLivePreview();
     updateFreeTierUI();
 
@@ -242,9 +258,12 @@ window.addEventListener('load', async () => {
 
     // Listen for Lemon Squeezy overlay events
     window.addEventListener('message', (event) => {
-        if (event.data && event.data.includes && event.data.includes('lemonsqueezy')) {
-            track('lemonsqueezy_event', { data: event.data });
-        }
+        try {
+            const data = typeof event.data === 'string' ? event.data : JSON.stringify(event.data);
+            if (data && data.includes('lemonsqueezy')) {
+                track('lemonsqueezy_event', { data: data.substring(0, 200) });
+            }
+        } catch (e) { /* ignore non-serializable messages */ }
     });
 
     track('page_view');
@@ -675,6 +694,7 @@ function updateFreeTierUI() {
             generateBtn.onclick = () => triggerPaywall(0);
         } else {
             generateBtn.innerHTML = `Generate Pages (${remaining} free left) <i class="fa-solid fa-wand-magic-sparkles"></i>`;
+            generateBtn.onclick = runGeneration;
         }
     }
 
@@ -820,23 +840,19 @@ function updateLivePreview() {
     const baseCity = document.getElementById('baseCity').value.trim();
     const suburbsRaw = document.getElementById('suburbs').value.trim();
 
-    // Get first suburb if available
     const suburbs = suburbsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
     const firstSuburb = suburbs[0] || '';
 
-    // Build dynamic values with defaults
     const displayName = name || 'Apex Plumbing Solutions';
     const displayService = service || 'Emergency Plumbing & Leak Repair';
     const displaySuburb = firstSuburb || 'Sugar Land';
     const displayCity = baseCity || 'Houston';
 
-    // Update browser URL bar
     const browserUrl = document.getElementById('browserUrl');
     const slug = displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const suburbSlug = displaySuburb.toLowerCase().replace(/\s+/g, '-');
     browserUrl.textContent = `https://${slug}.com/${suburbSlug}`;
 
-    // Build the preview content
     const viewport = document.getElementById('previewViewport');
     const watermarkHTML = !isProUser ? `
         <div style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:10px 20px;text-align:center;">
@@ -854,17 +870,16 @@ function updateLivePreview() {
                 <h3>${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}</h3>
                 <p>Your trusted local ${escapeHtml(displayService.toLowerCase())} partner servicing the ${escapeHtml(displaySuburb)} community in the ${escapeHtml(displayCity)} area.</p>
             </div>
-            <div class="preview-details">
-                <div class="preview-description">
-                    <h4>Professional ${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}, ${escapeHtml(displayCity)}</h4>
-                    <p>At ${escapeHtml(displayName)}, we deliver high-quality, reliable ${escapeHtml(displayService.toLowerCase())} to homes and businesses across ${escapeHtml(displaySuburb)}. Our experienced team handles jobs of every size with prompt scheduling and upfront pricing.</p>
-                    <p>We know ${escapeHtml(displayService.toLowerCase())} problems need fast solutions. That is why we offer same-day availability, transparent quotes, and guaranteed workmanship on every service call in the ${escapeHtml(displaySuburb)} area.</p>
+            <div style="padding:28px 24px;">
+                <h4 style="font-size:1.2rem;margin:0 0 12px;color:#111827;">Professional ${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}, ${escapeHtml(displayCity)}</h4>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">At ${escapeHtml(displayName)}, we deliver high-quality, reliable ${escapeHtml(displayService.toLowerCase())} to homes and businesses across ${escapeHtml(displaySuburb)}. Our experienced team handles jobs of every size with prompt scheduling and upfront pricing.</p>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">We know ${escapeHtml(displayService.toLowerCase())} problems need fast solutions. That is why we offer same-day availability, transparent quotes, and guaranteed workmanship on every service call in the ${escapeHtml(displaySuburb)} area.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${escapeHtml(displayService.split('&')[0].trim())}</span>
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Local Service</span>
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Free Estimates</span>
                 </div>
-                <div class="preview-sidebar">
-                    <h4>Request a Quote</h4>
-                    <p>Fast estimates for ${escapeHtml(displayService.toLowerCase())} in ${escapeHtml(displaySuburb)}.</p>
-                    <a href="#" style="display: block; text-align: center; background-color: #6366f1; color: white; padding: 10px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px;">Get a Free Estimate</a>
-                </div>
+                <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">Get a Free Estimate</a>
             </div>
             ${watermarkHTML}
         </div>
