@@ -126,8 +126,9 @@ const PAGE_STYLES = {
     }
 };
 
-function buildOrchestrationPrompt(pageStyle) {
+function buildOrchestrationPrompt(pageStyle, localContext) {
     const style = PAGE_STYLES[pageStyle] || PAGE_STYLES.trust;
+    const localRef = localContext || 'the local area';
 
     return `You are an elite local SEO content strategist who thinks like a human copywriter, not an AI. Your job is to produce a landing page that could pass as written by a real agency for a real client.
 
@@ -186,7 +187,7 @@ Return a valid JSON object with exactly these keys:
 - "process_steps": Array of exactly 3 steps. Each: {"step": N, "description": "one natural sentence"}. Written like explaining to a neighbor, not a manual.
 - "faq": Array of exactly 3 objects with "q" and "a". Questions must sound like real customer questions. Answers must be 1-2 sentences, specific, not evasive.
 - "cta_text": Action-oriented CTA that matches the chosen style.
-- "trust_signal": A single sentence of local trust framing. Something like "Serving ${localContext || 'the local area'} with 15+ years of hands-on experience" or similar.
+- "trust_signal": A single sentence of local trust framing. Something like "Serving ${localRef} with 15+ years of hands-on experience" or similar.
 - "variation_seed": A number 1-1000 that represents the structural variation used (so suburb pages look different)
 
 STRICT CONTENT RULES:
@@ -242,7 +243,7 @@ module.exports = async (req, res) => {
         }
     }
 
-    const systemPrompt = buildOrchestrationPrompt(pageStyle);
+    const systemPrompt = buildOrchestrationPrompt(pageStyle, localContext);
 
     const userPrompt = `Business Name: ${businessName}
 Primary Service: ${service}
