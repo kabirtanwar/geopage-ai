@@ -1,105 +1,45 @@
 // Admin Dashboard — Command Center Logic
 const API_BASE = '/api/admin';
 const OUTREACH_API = '/api/outreach';
-const ADMIN_EMAILS = (typeof ADMIN_EMAILS_CONFIG !== 'undefined') ? ADMIN_EMAILS_CONFIG : [];
+const ACCESS_KEY = 'geopage-admin-2024';
+const STORAGE_KEY = 'geopage_admin_auth';
 
 // ============================================================
-// Auth Gate — properly waits for Supabase session
+// Access Key Auth — simple localStorage-based
 // ============================================================
 (function initAuth() {
-    const T0 = performance.now();
-    const gate = document.getElementById('authGate');
-
-    function log(msg) {
-        const ms = Math.round(performance.now() - T0);
-        console.log(`[Admin Auth ${ms}ms] ${msg}`);
+    if (sessionStorage.getItem(STORAGE_KEY) === 'true') {
+        document.getElementById('accessModal').remove();
+        return;
     }
 
-    function allowDashboard(user, token) {
-        window._adminUser = user;
-        window._adminToken = token;
-        const email = (user.email || '').toLowerCase();
-        document.getElementById('adminEmail').textContent = email;
-        if (gate) gate.remove();
-        log('Dashboard access granted: ' + email);
-    }
+    document.getElementById('accessSubmit').addEventListener('click', tryKey);
+    document.getElementById('accessKeyInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') tryKey();
+    });
+    document.getElementById('accessKeyInput').focus();
 
-    function showLoginPrompt(msg) {
-        log('No session: ' + msg);
-        if (gate) {
-            gate.querySelector('span').innerHTML = msg + '<br><a href="/" style="color:#6366f1;margin-top:12px;display:inline-block;">Go to login →</a>';
-            gate.querySelector('div').style.borderTopColor = '#f59e0b';
+    function tryKey() {
+        const input = document.getElementById('accessKeyInput');
+        const err = document.getElementById('accessError');
+        if (input.value === ACCESS_KEY) {
+            sessionStorage.setItem(STORAGE_KEY, 'true');
+            document.getElementById('accessModal').remove();
+        } else {
+            err.textContent = 'Invalid key';
+            err.style.display = 'block';
+            input.value = '';
+            input.focus();
         }
     }
-
-    function waitForSupabase(retries) {
-        return new Promise((resolve, reject) => {
-            if (window.supabase && window.supabase.createClient) { resolve(window.supabase); return; }
-            if (retries <= 0) { reject(new Error('Supabase SDK failed to load')); return; }
-            setTimeout(() => waitForSupabase(retries - 1).then(resolve).catch(reject), 100);
-        });
-    }
-
-    waitForSupabase(50).then((supabase) => {
-        const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        client.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                const email = (session.user.email || '').toLowerCase().trim();
-                if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(email)) {
-                    showLoginPrompt('Email "' + email + '" is not authorized for admin access.');
-                    return;
-                }
-                allowDashboard(session.user, session.access_token);
-                return;
-            }
-
-            // No session — wait for Supabase to hydrate from localStorage
-            log('No session yet, waiting for onAuthStateChange...');
-            let resolved = false;
-            const { data: { subscription } } = client.auth.onAuthStateChange((event, sess) => {
-                if (resolved) return;
-                if (sess) {
-                    resolved = true;
-                    subscription.unsubscribe();
-                    const email = (sess.user.email || '').toLowerCase().trim();
-                    if (ADMIN_EMAILS.length > 0 && !ADMIN_EMAILS.includes(email)) {
-                        showLoginPrompt('Email "' + email + '" is not authorized for admin access.');
-                        return;
-                    }
-                    allowDashboard(sess.user, sess.access_token);
-                } else if (event === 'SIGNED_OUT') {
-                    resolved = true;
-                    subscription.unsubscribe();
-                    showLoginPrompt('You are not signed in. Please log in first.');
-                }
-            });
-
-            // If no auth state after 5s, show login prompt (don't redirect)
-            setTimeout(() => {
-                if (!resolved) {
-                    resolved = true;
-                    try { subscription.unsubscribe(); } catch {}
-                    showLoginPrompt('Session not found. Please log in on the main site first.');
-                }
-            }, 5000);
-        }).catch((err) => {
-            log('getSession error: ' + err.message);
-            showLoginPrompt('Auth check failed: ' + err.message);
-        });
-    }).catch((err) => {
-        log('SDK load failed: ' + err.message);
-        showLoginPrompt('Failed to load Supabase SDK: ' + err.message);
-    });
 })();
 
-function authHeaders() {
-    const h = { 'Content-Type': 'application/json' };
-    if (window._adminToken) h['Authorization'] = `Bearer ${window._adminToken}`;
-    return h;
-}
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    sessionStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+});
+
+function authHeaders() { return { 'Content-Type': 'application/json' }; }
 
 // Navigation
 document.querySelectorAll('.nav-item').forEach(item => {
