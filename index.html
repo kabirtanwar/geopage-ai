@@ -382,6 +382,41 @@
                             <label for="localContext">Local Context & Landmarks (Optional)</label>
                             <textarea id="localContext" rows="2" placeholder="e.g. Near Memorial Park, servicing the I-45 corridor"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label>Page Style</label>
+                            <div class="style-selector" id="styleSelector">
+                                <div class="style-card active" data-style="trust" onclick="selectPageStyle('trust')">
+                                    <i class="fa-solid fa-handshake"></i>
+                                    <span class="style-name">Local Trust</span>
+                                    <span class="style-desc">Warm, community-rooted</span>
+                                </div>
+                                <div class="style-card" data-style="premium" onclick="selectPageStyle('premium')">
+                                    <i class="fa-solid fa-gem"></i>
+                                    <span class="style-name">Premium</span>
+                                    <span class="style-desc">Polished, high-end</span>
+                                </div>
+                                <div class="style-card" data-style="emergency" onclick="selectPageStyle('emergency')">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span class="style-name">Emergency</span>
+                                    <span class="style-desc">Urgent, conversion-focused</span>
+                                </div>
+                                <div class="style-card" data-style="community" onclick="selectPageStyle('community')">
+                                    <i class="fa-solid fa-people-roof"></i>
+                                    <span class="style-name">Community</span>
+                                    <span class="style-desc">Friendly, local feel</span>
+                                </div>
+                                <div class="style-card" data-style="minimal" onclick="selectPageStyle('minimal')">
+                                    <i class="fa-solid fa-minus"></i>
+                                    <span class="style-name">Minimal</span>
+                                    <span class="style-desc">Clean, modern</span>
+                                </div>
+                                <div class="style-card" data-style="commercial" onclick="selectPageStyle('commercial')">
+                                    <i class="fa-solid fa-building"></i>
+                                    <span class="style-name">Commercial</span>
+                                    <span class="style-desc">B2B, operational</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="button-row">
                             <button class="btn btn-secondary" onclick="nextStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
                             <button class="btn btn-success glow-button" id="generateBtn" onclick="runGeneration()">Generate Pages <i class="fa-solid fa-wand-magic-sparkles"></i></button>

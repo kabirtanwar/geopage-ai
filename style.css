@@ -1263,6 +1263,60 @@ textarea:focus {
     margin-top: 6px;
 }
 
+/* Page Style Selector */
+.style-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.style-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.style-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.style-card.active {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.15), rgba(16, 185, 129, 0.08));
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+}
+
+.style-card i {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.style-card.active i {
+    color: var(--accent-primary);
+}
+
+.style-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.style-desc {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+}
+
 /* Buttons */
 .btn {
     font-family: var(--font-body);
@@ -2587,6 +2641,14 @@ div[class*="lemon"] {
     .input-hint {
         font-size: 0.78rem;
         line-height: 1.5;
+    }
+
+    .style-selector {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .style-card {
+        padding: 10px 8px;
     }
 
     .btn {

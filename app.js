@@ -18,6 +18,7 @@ let freeGenerationCount = 0;
 let watermarkEnabled = true;
 let livePreviewReady = false;
 let currentUser = null;
+let selectedPageStyle = 'trust';
 
 // =============================================
 // POSTHOG ANALYTICS HELPERS
@@ -293,6 +294,18 @@ function nextStep(step) {
     if (badge) badge.textContent = step;
 }
 
+function selectPageStyle(style) {
+    selectedPageStyle = style;
+    document.querySelectorAll('.style-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.style === style);
+    });
+    track('style_selected', { style });
+    // Update preview style indicator
+    const titleEl = document.getElementById('previewTitle');
+    const styleNames = { trust: 'Local Trust', premium: 'Premium Service', emergency: 'Emergency Conversion', community: 'Community-Focused', minimal: 'Minimal Clean', commercial: 'Commercial' };
+    if (titleEl) titleEl.textContent = `Live Preview — ${styleNames[style] || 'Local Trust'}`;
+}
+
 // Open and Close Paywall Modal
 function triggerPaywall(suburbsCount) {
     document.getElementById('paywallModal').classList.add('active');
@@ -340,6 +353,8 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         </div>
     `).join('');
     const ctaText = content.cta_text || 'Contact Us';
+    const localHook = content.local_hook ? `<p class="local-hook">${escapeHtml(content.local_hook)}</p>` : '';
+    const trustSignal = content.trust_signal ? `<div class="trust-signal"><span>${escapeHtml(content.trust_signal)}</span></div>` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -377,6 +392,9 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
         .cta-section { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; text-align: center; padding: 60px 20px; }
         .cta-section h2 { color: white; }
         .cta-btn { display: inline-block; background-color: #10b981; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+        .local-hook { color: #6366f1; font-size: 0.95rem; font-weight: 600; font-style: italic; margin: 0 0 20px; padding-left: 16px; border-left: 3px solid #6366f1; line-height: 1.6; }
+        .trust-signal { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+        .trust-signal span { font-size: 0.88rem; color: #166534; font-weight: 600; }
         .card { background-color: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card h3 { margin-top: 0; color: #111827; }
         .sidebar-cta { display: block; width: 100%; background-color: #6366f1; color: white; text-align: center; padding: 12px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 20px; }
@@ -396,12 +414,14 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
     <div class="section">
         <div class="content-grid">
             <div>
+                ${localHook}
                 <h2>Professional ${service} in ${suburb}, ${baseCity}</h2>
                 <p>${content.paragraph_1 || `At ${business}, we provide reliable ${service.toLowerCase()} solutions to homeowners and businesses throughout ${suburb}.`}</p>
                 <p>${content.paragraph_2 || `We offer prompt scheduling, upfront pricing, and guaranteed workmanship on every service call in the ${suburb} area.`}</p>
                 ${servicesList ? `<h3>Our Services in ${suburb}</h3><ul class="services-list" style="list-style:none;padding:0;">${servicesList}</ul>` : ''}
             </div>
             <div class="sidebar">
+                ${trustSignal}
                 <div class="card">
                     <h3>Request an Estimate</h3>
                     <p>Contact us today to discuss your project or request service in ${suburb}.</p>
@@ -426,11 +446,15 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
 </html>`;
 }
 
-// Generate index.html that links all suburb pages together (internal linking)
+// Generate index.html - Smart Local Service Hub
 function generateIndexTemplate(business, service, suburbs) {
-    const links = suburbs.map(suburb => {
+    const suburbCards = suburbs.map(suburb => {
         const slug = suburb.toLowerCase().replace(/\s+/g, '-');
-        return `<li style="margin-bottom:12px;"><a href="${slug}.html" style="color:#6366f1;text-decoration:none;font-weight:600;font-size:1.05rem;">${service} in ${suburb}</a><br><span style="color:#6b7280;font-size:0.9rem;">Local landing page for ${suburb} area</span></li>`;
+        return `<li style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;transition:box-shadow 0.2s;">
+            <a href="${slug}.html" style="color:#111827;text-decoration:none;font-weight:700;font-size:1.1rem;display:block;margin-bottom:6px;">${service} in ${suburb}</a>
+            <p style="color:#6b7280;font-size:0.9rem;margin:0 0 12px;line-height:1.5;">Professional ${service.toLowerCase()} serving the ${suburb} community. Local expertise, fast response, and reliable results.</p>
+            <a href="${slug}.html" style="color:#6366f1;font-size:0.85rem;font-weight:600;text-decoration:none;">View Service Page &rarr;</a>
+        </li>`;
     }).join('\n');
 
     return `<!DOCTYPE html>
@@ -438,29 +462,33 @@ function generateIndexTemplate(business, service, suburbs) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${business} - Service Area Pages</title>
+    <title>${business} - ${service} Service Areas</title>
     <meta name="description" content="${business} provides ${service.toLowerCase()} across ${suburbs.length} service areas. Find your local page below.">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Outfit', sans-serif; color: #374151; margin: 0; background: #f9fafb; }
-        .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
-        h1 { font-size: 2rem; color: #111827; margin-bottom: 8px; }
-        .subtitle { color: #6b7280; font-size: 1.1rem; margin-bottom: 32px; }
-        ul { list-style: none; padding: 0; }
-        li { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px; }
+        .hero { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; text-align: center; padding: 60px 20px; }
+        .hero h1 { font-size: 2.2rem; margin: 0 0 10px; font-weight: 700; }
+        .hero p { color: #cbd5e1; font-size: 1.1rem; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .section-title { font-size: 1.3rem; color: #111827; margin-bottom: 20px; font-weight: 700; }
+        ul { list-style: none; padding: 0; display: grid; gap: 14px; }
         .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 0.85rem; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="hero">
         <h1>${business}</h1>
-        <p class="subtitle">${service} - ${suburbs.length} Service Areas</p>
+        <p>${service} &mdash; ${suburbs.length} Service Areas</p>
+    </div>
+    <div class="container">
+        <h2 class="section-title">Our Service Areas</h2>
         <ul>
-            ${links}
+            ${suburbCards}
         </ul>
-        <div class="footer">
-            &copy; ${new Date().getFullYear()} ${business}. All rights reserved.
-        </div>
+    </div>
+    <div class="footer">
+        &copy; ${new Date().getFullYear()} ${business}. All rights reserved.
     </div>
 </body>
 </html>`;
@@ -485,13 +513,24 @@ function renderLivePreview(suburbName) {
     const phone = document.getElementById('contactPhone').value;
     const baseCity = document.getElementById('baseCity').value;
 
-    const servicesHTML = (content.services || []).slice(0, 3).map(s => 
+    const servicesHTML = (content.services || []).slice(0, 4).map(s => 
         `<span style="display:inline-block;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${escapeHtml(s)}</span>`
     ).join('');
 
-    const faqHTML = (content.faq || []).slice(0, 2).map(f => 
-        `<div style="margin-bottom:12px;"><strong style="color:#111827;font-size:0.9rem;">${escapeHtml(f.q)}</strong><p style="color:#6b7280;font-size:0.85rem;margin:4px 0 0;line-height:1.5;">${escapeHtml(f.a)}</p></div>`
+    const faqHTML = (content.faq || []).slice(0, 3).map(f => 
+        `<div style="margin-bottom:14px;"><strong style="color:#111827;font-size:0.9rem;">${escapeHtml(f.q)}</strong><p style="color:#6b7280;font-size:0.85rem;margin:4px 0 0;line-height:1.5;">${escapeHtml(f.a)}</p></div>`
     ).join('');
+
+    const processHTML = (content.process_steps || []).map(step => `
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+            <div style="width:28px;height:28px;background:#6366f1;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;">${step.step}</div>
+            <p style="color:#4b5563;font-size:0.88rem;margin:0;line-height:1.5;">${escapeHtml(step.description)}</p>
+        </div>
+    `).join('');
+
+    const localHookHTML = content.local_hook ? `<p style="color:#6366f1;font-size:0.9rem;font-weight:600;font-style:italic;margin:0 0 16px;padding-left:14px;border-left:3px solid #6366f1;">${escapeHtml(content.local_hook)}</p>` : '';
+
+    const trustSignalHTML = content.trust_signal ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;margin-bottom:16px;"><span style="font-size:0.82rem;color:#166534;font-weight:600;"><i class="fa-solid fa-shield-halved" style="margin-right:6px;"></i>${escapeHtml(content.trust_signal)}</span></div>` : '';
 
     const previewHTML = `
         <div class="suburb-page-preview">
@@ -504,11 +543,14 @@ function renderLivePreview(suburbName) {
                 <p>${escapeHtml(content.subheadline || 'Trusted local specialists serving the ' + suburbName + ' area.')}</p>
             </div>
             <div style="padding:28px 24px;">
+                ${localHookHTML}
                 <h4 style="font-family:var(--font-heading);font-size:1.2rem;margin:0 0 12px;color:#111827;">${escapeHtml(service)} in ${escapeHtml(suburbName)}</h4>
                 <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">${escapeHtml(content.paragraph_1 || '')}</p>
                 <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">${escapeHtml(content.paragraph_2 || '')}</p>
-                ${servicesHTML ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">${servicesHTML}</div>` : ''}
-                ${faqHTML ? `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;"><h5 style="font-size:0.9rem;color:#111827;margin:0 0 12px;">Common Questions</h5>${faqHTML}</div>` : ''}
+                ${servicesHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:0 0 8px;font-weight:700;">Services</h5><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">${servicesHTML}</div>` : ''}
+                ${processHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">How It Works</h5>${processHTML}` : ''}
+                ${trustSignalHTML}
+                ${faqHTML ? `<h5 style="font-size:0.88rem;color:#111827;margin:16px 0 10px;font-weight:700;">Common Questions</h5><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;">${faqHTML}</div>` : ''}
                 <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">${escapeHtml(content.cta_text || 'Get a Free Estimate')}</a>
             </div>
         </div>
@@ -600,7 +642,8 @@ async function runGeneration() {
                     service: service,
                     suburb: suburb,
                     baseCity: baseCity,
-                    localContext: localContext
+                    localContext: localContext,
+                    pageStyle: selectedPageStyle
                 })
             });
 
