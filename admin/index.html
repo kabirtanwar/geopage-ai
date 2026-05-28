@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="/admin/style.css">
 </head>
 <body>
+    <div id="authGate" style="position:fixed;inset:0;background:#09090b;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-family:Inter,sans-serif;">
+        <div style="width:36px;height:36px;border:3px solid #27272a;border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;"></div>
+        <span style="color:#71717a;font-size:0.85rem;">Verifying access...</span>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+
     <div class="admin-layout">
         <aside class="sidebar">
             <div class="sidebar-header">
