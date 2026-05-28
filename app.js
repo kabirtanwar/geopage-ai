@@ -1,45 +1,236 @@
+// =============================================
+// CONFIGURATION
+// =============================================
+const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
+const FREE_GENERATION_LIMIT = 3;
+const LEMON_SQUEEZY_URL = ''; // Set when ready
+
+// Initialize Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // State Variables
 let currentStep = 1;
-let generatedPagesData = {}; // Stores JSON details of generated suburbs
+let generatedPagesData = {};
 let targetSuburbsList = [];
 let isProUser = false;
-
-// Free Tier State
 let freeGenerationCount = 0;
-const FREE_GENERATION_LIMIT = 3;
 let watermarkEnabled = true;
-
-// Live Preview State
 let livePreviewReady = false;
+let currentUser = null;
 
-// On Page Load: Check Stripe Payment Success in URL
-window.addEventListener('load', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('status') === 'success') {
-        localStorage.setItem('geopage_pro_user', 'true');
-        // Clear url parameters to look clean
-        window.history.replaceState({}, document.title, window.location.pathname);
+// =============================================
+// POSTHOG ANALYTICS HELPERS
+// =============================================
+function track(event, props = {}) {
+    if (typeof posthog !== 'undefined') {
+        posthog.capture(event, props);
     }
-    
-    // Check local storage for purchase token
-    if (localStorage.getItem('geopage_pro_user') === 'true') {
+}
+
+// =============================================
+// AUTH SYSTEM
+// =============================================
+async function initAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        currentUser = session.user;
+        await onAuthSuccess(session.user);
+    }
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+            currentUser = session.user;
+            await onAuthSuccess(session.user);
+            track('user_signed_in', { method: currentUser.app_metadata?.provider || 'email' });
+        } else if (event === 'SIGNED_OUT') {
+            currentUser = null;
+            isProUser = false;
+            watermarkEnabled = true;
+            onAuthSignOut();
+        }
+    });
+}
+
+async function onAuthSuccess(user) {
+    closeAuthModal();
+    updateNavForAuth(user);
+
+    // Check if user is paid
+    const { data } = await supabase
+        .from('user_subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+
+    if (data && data.status === 'active') {
         isProUser = true;
         watermarkEnabled = false;
-        // Upgrade UI buttons/badges
-        const navBadge = document.querySelector('.nav-badge');
-        if (navBadge) {
-            navBadge.innerHTML = '<i class="fa-solid fa-crown" style="color: #fbbf24;"></i> Pro Member';
-            navBadge.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-        }
     }
 
-    // Load free generation count from storage
-    freeGenerationCount = parseInt(localStorage.getItem('geopage_free_count') || '0', 10);
+    // Get generation count from server
+    await refreshGenerationCount();
+    updateFreeTierUI();
+}
+
+function onAuthSignOut() {
+    freeGenerationCount = 0;
+    updateNavForAuth(null);
+    updateFreeTierUI();
+    const upgradeBanner = document.getElementById('upgradeBanner');
+    if (upgradeBanner) upgradeBanner.style.display = 'flex';
+}
+
+function updateNavForAuth(user) {
+    const loginBtn = document.getElementById('navLoginBtn');
+    const userMenu = document.getElementById('userMenu');
+    const userAvatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const dropdownEmail = document.getElementById('userDropdownEmail');
+
+    if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'block';
+        const email = user.email || 'Account';
+        const initial = (email[0] || 'U').toUpperCase();
+        if (userAvatar) userAvatar.textContent = initial;
+        if (userName) userName.textContent = email.split('@')[0];
+        if (dropdownEmail) dropdownEmail.textContent = email;
+    } else {
+        if (loginBtn) loginBtn.style.display = '';
+        if (userMenu) userMenu.style.display = 'none';
+    }
+}
+
+function toggleUserMenu() {
+    const menu = document.getElementById('userMenu');
+    menu.classList.toggle('open');
+}
+
+async function handleAuthSubmit(event, mode) {
+    event.preventDefault();
+    const email = mode === 'signup'
+        ? document.getElementById('signup-email').value
+        : document.getElementById('login-email').value;
+    const password = mode === 'signup'
+        ? document.getElementById('signup-password').value
+        : document.getElementById('login-password').value;
+    const name = mode === 'signup'
+        ? document.getElementById('signup-name').value : '';
+
+    let result;
+    if (mode === 'signup') {
+        result = await supabase.auth.signUp({
+            email, password,
+            options: { data: { full_name: name } }
+        });
+    } else {
+        result = await supabase.auth.signInWithPassword({ email, password });
+    }
+
+    if (result.error) {
+        track('auth_error', { mode, error: result.error.message });
+        alert(result.error.message);
+        return;
+    }
+
+    closeAuthModal();
+    track('auth_submitted', { mode });
+}
+
+async function handleGoogleAuth() {
+    track('auth_google_clicked');
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: window.location.origin }
+    });
+    if (error) {
+        track('auth_error', { mode: 'google', error: error.message });
+        alert(error.message);
+    }
+}
+
+async function handleLogout() {
+    await supabase.auth.signOut();
+    track('user_signed_out');
+    toggleUserMenu();
+}
+
+// Click outside to close user menu
+document.addEventListener('click', (e) => {
+    const menu = document.getElementById('userMenu');
+    if (menu && !menu.contains(e.target)) {
+        menu.classList.remove('open');
+    }
+});
+
+// =============================================
+// SERVER-SIDE GENERATION TRACKING
+// =============================================
+async function refreshGenerationCount() {
+    if (!currentUser) {
+        freeGenerationCount = parseInt(localStorage.getItem('geopage_free_count') || '0', 10);
+        return;
+    }
+    try {
+        const { data } = await supabase
+            .from('user_usage')
+            .select('generation_count')
+            .eq('user_id', currentUser.id)
+            .single();
+        freeGenerationCount = data ? data.generation_count : 0;
+    } catch {
+        freeGenerationCount = 0;
+    }
+}
+
+async function incrementGenerationCount() {
+    if (!currentUser) {
+        freeGenerationCount++;
+        localStorage.setItem('geopage_free_count', freeGenerationCount.toString());
+        return;
+    }
+    try {
+        const { data } = await supabase
+            .from('user_usage')
+            .select('generation_count')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (data) {
+            await supabase
+                .from('user_usage')
+                .update({ generation_count: data.generation_count + 1, updated_at: new Date().toISOString() })
+                .eq('user_id', currentUser.id);
+        } else {
+            await supabase
+                .from('user_usage')
+                .insert({ user_id: currentUser.id, generation_count: 1 });
+        }
+        freeGenerationCount++;
+    } catch {
+        freeGenerationCount++;
+    }
+}
+
+// =============================================
+// PAGE LOAD INIT
+// =============================================
+window.addEventListener('load', async () => {
+    // Handle Lemon Squeezy/Stripe success redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success' || urlParams.get('type') === 'success') {
+        localStorage.setItem('geopage_pro_user', 'true');
+        isProUser = true;
+        watermarkEnabled = false;
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Initialize auth (checks session, loads user state)
+    await initAuth();
 
     // Initialize Live Reactive Preview
     initLivePreview();
-
-    // Update free tier UI
     updateFreeTierUI();
 
     // Show upgrade banner for free users
@@ -47,6 +238,14 @@ window.addEventListener('load', () => {
     if (upgradeBanner && !isProUser) {
         upgradeBanner.style.display = 'flex';
     }
+
+    // Set Lemon Squeezy checkout link
+    if (LEMON_SQUEEZY_URL) {
+        const checkoutLink = document.getElementById('checkoutLink');
+        if (checkoutLink) checkoutLink.href = LEMON_SQUEEZY_URL;
+    }
+
+    track('page_view');
 });
 
 // Step Navigation
@@ -77,6 +276,7 @@ function nextStep(step) {
 function triggerPaywall(suburbsCount) {
     document.getElementById('requestedSuburbsCount').textContent = suburbsCount;
     document.getElementById('paywallModal').classList.add('active');
+    track('paywall_shown', { suburbs_count: suburbsCount });
 }
 
 function closePaywall() {
@@ -206,6 +406,46 @@ function generateHTMLTemplate(business, service, phone, email, suburb, baseCity,
 </html>`;
 }
 
+// Generate index.html that links all suburb pages together (internal linking)
+function generateIndexTemplate(business, service, suburbs) {
+    const links = suburbs.map(suburb => {
+        const slug = suburb.toLowerCase().replace(/\s+/g, '-');
+        return `<li style="margin-bottom:12px;"><a href="${slug}.html" style="color:#6366f1;text-decoration:none;font-weight:600;font-size:1.05rem;">${service} in ${suburb}</a><br><span style="color:#6b7280;font-size:0.9rem;">Local landing page for ${suburb} area</span></li>`;
+    }).join('\n');
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${business} - Service Area Pages</title>
+    <meta name="description" content="${business} provides ${service.toLowerCase()} across ${suburbs.length} service areas. Find your local page below.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; color: #374151; margin: 0; background: #f9fafb; }
+        .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; }
+        h1 { font-size: 2rem; color: #111827; margin-bottom: 8px; }
+        .subtitle { color: #6b7280; font-size: 1.1rem; margin-bottom: 32px; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 18px 20px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 0.85rem; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>${business}</h1>
+        <p class="subtitle">${service} - ${suburbs.length} Service Areas</p>
+        <ul>
+            ${links}
+        </ul>
+        <div class="footer">
+            &copy; ${new Date().getFullYear()} ${business}. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>`;
+}
+
 // Render Page into the Browser Viewport Live Preview
 function renderLivePreview(suburbName) {
     const data = generatedPagesData[suburbName];
@@ -295,23 +535,21 @@ async function runGeneration() {
         return;
     }
 
-    // Split suburbs by comma and clean whitespace
     let suburbs = suburbsRaw.split(',').map(s => s.trim()).filter(s => s.length > 0);
     targetSuburbsList = suburbs;
 
-    // Check Paywall (Limit to 3 suburbs for free users)
     if (suburbs.length > 3 && !isProUser) {
         triggerPaywall(suburbs.length);
         return;
     }
 
-    // Check free generation limit
     if (!isProUser && freeGenerationCount >= FREE_GENERATION_LIMIT) {
         triggerExportLimit();
         return;
     }
 
-    // Show loading overlay
+    track('generation_started', { suburb_count: suburbs.length, is_pro: isProUser });
+
     const overlay = document.getElementById('loaderOverlay');
     const progressBar = document.getElementById('progressBar');
     overlay.classList.add('active');
@@ -320,16 +558,23 @@ async function runGeneration() {
     generatedPagesData = {};
     const totalSuburbs = suburbs.length;
 
+    // Get auth token for server-side tracking
+    let authToken = null;
+    if (currentUser) {
+        const { data: { session } } = await supabase.auth.getSession();
+        authToken = session?.access_token || null;
+    }
+
     try {
-        // Sequentially call the Groq API wrapper for each suburb to avoid rate limits on free tier
         for (let i = 0; i < totalSuburbs; i++) {
             const suburb = suburbs[i];
             
+            const headers = { 'Content-Type': 'application/json' };
+            if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers,
                 body: JSON.stringify({
                     businessName: name,
                     service: service,
@@ -347,21 +592,25 @@ async function runGeneration() {
             const pageContent = await response.json();
             generatedPagesData[suburb] = pageContent;
 
-            // Update Progress bar
             const percent = ((i + 1) / totalSuburbs) * 100;
             progressBar.style.width = `${percent}%`;
         }
 
-        // Render Tabs and Load Live Preview
         setupTabs(suburbs);
         renderLivePreview(suburbs[0]);
 
-        // Trigger ZIP Creation and Download
+        // Track generation count
+        await incrementGenerationCount();
+        updateFreeTierUI();
+
+        track('generation_completed', { suburb_count: suburbs.length, is_pro: isProUser });
+
         triggerZipDownload(name, service, phone, email, baseCity);
 
     } catch (error) {
         console.error("Generation Error:", error);
-        alert(`Error generating pages: ${error.message}\n\nMake sure the Vercel server environment has the GROQ_API_KEY environment variable configured.`);
+        alert(`Error generating pages: ${error.message}`);
+        track('generation_error', { error: error.message });
     } finally {
         overlay.classList.remove('active');
     }
@@ -371,24 +620,17 @@ async function runGeneration() {
 function triggerZipDownload(name, service, phone, email, baseCity) {
     const zip = new JSZip();
 
-    // Loop through suburbs and add HTML files to the zip container
     Object.keys(generatedPagesData).forEach(suburb => {
         const data = generatedPagesData[suburb];
         const htmlCode = generateHTMLTemplate(name, service, phone, email, suburb, baseCity, data.content);
-        
-        // Format filename (e.g. Sugar Land -> sugar-land.html)
         const filename = `${suburb.toLowerCase().replace(/\s+/g, '-')}.html`;
         zip.file(filename, htmlCode);
     });
 
-    // Increment free generation count for non-pro users
-    if (!isProUser) {
-        freeGenerationCount++;
-        localStorage.setItem('geopage_free_count', freeGenerationCount.toString());
-        updateFreeTierUI();
-    }
+    // Add index.html linking all suburb pages
+    const indexHtml = generateIndexTemplate(name, service, Object.keys(generatedPagesData));
+    zip.file('index.html', indexHtml);
 
-    // Generate zip binary and trigger local download
     zip.generateAsync({ type: 'blob' }).then(blob => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -397,12 +639,11 @@ function triggerZipDownload(name, service, phone, email, baseCity) {
         link.click();
         document.body.removeChild(link);
 
-        // Show success toast
         const toast = document.getElementById('downloadToast');
         toast.classList.add('active');
-        setTimeout(() => {
-            toast.classList.remove('active');
-        }, 4000);
+        setTimeout(() => toast.classList.remove('active'), 4000);
+
+        track('zip_downloaded', { file_count: Object.keys(generatedPagesData).length, is_pro: isProUser });
     });
 }
 
@@ -416,8 +657,18 @@ function updateFreeTierUI() {
     const remaining = Math.max(0, FREE_GENERATION_LIMIT - freeGenerationCount);
     const generateBtn = document.getElementById('generateBtn');
     const stepTitle = document.querySelector('.input-panel .panel-header h2');
+    const upgradeBanner = document.getElementById('upgradeBanner');
     
-    if (!isProUser && generateBtn) {
+    if (isProUser) {
+        if (generateBtn) {
+            generateBtn.innerHTML = 'Generate Pages <i class="fa-solid fa-wand-magic-sparkles"></i>';
+        }
+        if (upgradeBanner) upgradeBanner.style.display = 'none';
+        if (stepTitle) stepTitle.innerHTML = '<span class="step-badge">1</span> Generate Deploy-Ready Pages';
+        return;
+    }
+
+    if (generateBtn) {
         if (remaining <= 0) {
             generateBtn.innerHTML = 'Upgrade for Unlimited <i class="fa-solid fa-lock"></i>';
             generateBtn.onclick = () => triggerPaywall(0);
@@ -426,15 +677,19 @@ function updateFreeTierUI() {
         }
     }
 
-    // Update panel header
-    if (!isProUser && stepTitle) {
+    if (stepTitle) {
         stepTitle.innerHTML = `<span class="step-badge">1</span> Generate Deploy-Ready Pages`;
+    }
+
+    if (upgradeBanner) {
+        upgradeBanner.style.display = currentUser ? 'flex' : 'none';
     }
 }
 
 function openAuthModal(mode = 'login') {
     document.getElementById('authModal').classList.add('active');
     toggleAuthTab(mode);
+    track('auth_modal_opened', { mode });
 }
 
 function closeAuthModal() {
@@ -449,28 +704,6 @@ function toggleAuthTab(mode) {
     document.getElementById('signup-form').classList.toggle('active', !loginActive);
 }
 
-function handleAuthSubmit(event, mode) {
-    event.preventDefault();
-    // Frontend placeholder - ready for Supabase integration
-    if (mode === 'signup') {
-        const email = document.getElementById('signup-email').value;
-        localStorage.setItem('geopage_user_email', email);
-        alert('Account created! Ready for Supabase auth integration.');
-    } else {
-        const email = document.getElementById('login-email').value;
-        localStorage.setItem('geopage_user_email', email);
-        alert('Signed in! Ready for Supabase auth integration.');
-    }
-    closeAuthModal();
-}
-
-function handleGoogleAuth() {
-    // Placeholder for Google OAuth - ready for Supabase integration
-    // When ready: supabase.auth.signInWithOAuth({ provider: 'google' })
-    alert('Google sign-in ready for Supabase integration.\n\nWhen connected, this will open Google OAuth.');
-    closeAuthModal();
-}
-
 function openContactModal(event) {
     if (event) event.preventDefault();
     document.getElementById('contactModal').classList.add('active');
@@ -482,9 +715,18 @@ function closeContactModal() {
 
 function handleContactSubmit(event) {
     event.preventDefault();
-    alert('Thanks! Your message has been noted. We will get back to you within 24 hours.');
+    const form = event.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Message Sent';
+    btn.disabled = true;
+    track('contact_form_submitted');
     event.target.reset();
-    closeContactModal();
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        closeContactModal();
+    }, 2000);
 }
 
 function handleEmailCapture(event) {
@@ -492,6 +734,7 @@ function handleEmailCapture(event) {
     const email = document.getElementById('captureEmail').value;
     if (email) {
         localStorage.setItem('geopage_captured_email', email);
+        track('email_captured', { email });
         event.target.reset();
         const btn = event.target.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
@@ -546,17 +789,21 @@ function renderDefaultPreview() {
                 <h3>Emergency Plumbing in Sugar Land</h3>
                 <p>Your trusted local plumbing partner servicing the Sugar Land community with fast, reliable repairs.</p>
             </div>
-            <div class="preview-details">
-                <div class="preview-description">
-                    <h4>Top-Tier Emergency Plumbing in Sugar Land</h4>
-                    <p>At Apex Plumbing Solutions, we are dedicated to providing high-quality, reliable emergency plumbing solutions to homeowners and businesses throughout Sugar Land. Our team of experienced professionals is fully equipped to handle jobs of all sizes.</p>
-                    <p>We understand that plumbing problems require fast solutions. That is why we offer prompt scheduling, upfront pricing, and guaranteed workmanship on every local service call in the Sugar Land area.</p>
+            <div style="padding:28px 24px;">
+                <h4 style="font-size:1.2rem;margin:0 0 12px;color:#111827;">Professional Emergency Plumbing in Sugar Land</h4>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">When a pipe bursts at midnight or your water heater fails on a Sunday morning, you need a plumbing team that answers the phone. Apex Plumbing Solutions provides emergency plumbing repair to homeowners across Sugar Land.</p>
+                <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">Our licensed technicians arrive with fully stocked trucks, ready to diagnose and repair burst pipes, clogged drains, sewer line issues, and water heater failures on the first visit.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Emergency Leak Repair</span>
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Drain Cleaning</span>
+                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Water Heater Service</span>
                 </div>
-                <div class="preview-sidebar">
-                    <h4>Need Assistance?</h4>
-                    <p>Get a fast quote for plumbing services in Sugar Land.</p>
-                    <a href="tel:5551234567" style="display: block; text-align: center; background-color: #6366f1; color: white; padding: 10px 0; border-radius: 6px; text-decoration: none; font-weight: 600; margin-top: 15px;">Get Quote</a>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px;margin-bottom:16px;">
+                    <h5 style="font-size:0.9rem;color:#111827;margin:0 0 10px;">Common Questions</h5>
+                    <div style="margin-bottom:10px;"><strong style="color:#111827;font-size:0.85rem;">Do you provide after-hours emergency service?</strong><p style="color:#6b7280;font-size:0.82rem;margin:3px 0 0;line-height:1.5;">Yes. Our on-call team handles emergencies 24/7, including weekends and holidays.</p></div>
+                    <div><strong style="color:#111827;font-size:0.85rem;">How quickly can you arrive?</strong><p style="color:#6b7280;font-size:0.82rem;margin:3px 0 0;line-height:1.5;">Most emergency calls in Sugar Land receive a technician within 60 minutes.</p></div>
                 </div>
+                <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">Get a Free Estimate</a>
             </div>
             ${watermarkHTML}
         </div>

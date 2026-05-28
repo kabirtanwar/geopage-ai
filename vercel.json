@@ -11,5 +11,8 @@
       "source": "/api/generate",
       "destination": "/api/generate.js"
     }
-  ]
+  ],
+  "env": {
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase-service-role-key"
+  }
 }

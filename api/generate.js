@@ -1,13 +1,13 @@
 const fetch = require('node-fetch');
 
+const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const FREE_GENERATION_LIMIT = 3;
+
 function parseRequestBody(body) {
     if (!body) return {};
     if (typeof body === 'string') {
-        try {
-            return JSON.parse(body);
-        } catch {
-            return {};
-        }
+        try { return JSON.parse(body); } catch { return {}; }
     }
     return body;
 }
@@ -18,34 +18,82 @@ function extractJsonObject(text) {
     const candidate = fencedMatch ? fencedMatch[1].trim() : trimmed;
     const firstBrace = candidate.indexOf('{');
     const lastBrace = candidate.lastIndexOf('}');
-
     if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
         throw new Error('Groq response did not contain a JSON object.');
     }
-
     return JSON.parse(candidate.slice(firstBrace, lastBrace + 1));
 }
 
+// Verify JWT token and get user ID
+async function verifyAuth(token) {
+    if (!token || !SUPABASE_SERVICE_KEY) return null;
+    try {
+        const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'apikey': SUPABASE_SERVICE_KEY
+            }
+        });
+        if (!response.ok) return null;
+        const user = await response.json();
+        return user.id || null;
+    } catch {
+        return null;
+    }
+}
+
+// Check if user is paid
+async function checkPaidStatus(userId) {
+    if (!userId || !SUPABASE_SERVICE_KEY) return false;
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${userId}&status=eq.active&select=status`,
+            {
+                headers: {
+                    'apikey': SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        if (!response.ok) return false;
+        const data = await response.json();
+        return data.length > 0;
+    } catch {
+        return false;
+    }
+}
+
+// Get generation count
+async function getGenerationCount(userId) {
+    if (!userId || !SUPABASE_SERVICE_KEY) return 0;
+    try {
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/user_usage?user_id=eq.${userId}&select=generation_count`,
+            {
+                headers: {
+                    'apikey': SUPABASE_SERVICE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        if (!response.ok) return 0;
+        const data = await response.json();
+        return data.length > 0 ? data[0].generation_count : 0;
+    } catch {
+        return 0;
+    }
+}
+
 module.exports = async (req, res) => {
-    // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 
-    // Handle Preflight OPTIONS request
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
-
-    if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
-    }
+    if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+    if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
     const body = parseRequestBody(req.body);
     const businessName = String(body.businessName || '').trim();
@@ -55,19 +103,32 @@ module.exports = async (req, res) => {
     const localContext = String(body.localContext || '').trim();
 
     if (!businessName || !service || !suburb || !baseCity) {
-        res.status(400).json({ error: 'Missing required parameters: businessName, service, suburb, and baseCity are required.' });
+        res.status(400).json({ error: 'Missing required parameters.' });
         return;
     }
 
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-        res.status(500).json({ 
-            error: 'GROQ_API_KEY environment variable is not configured. Please add your key in the Vercel Dashboard.' 
-        });
+        res.status(500).json({ error: 'GROQ_API_KEY not configured.' });
         return;
     }
 
-    // Construct Groq OpenAI-compatible payload
+    // Server-side auth + usage tracking
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
+    const userId = await verifyAuth(token);
+
+    if (userId) {
+        const isPaid = await checkPaidStatus(userId);
+        if (!isPaid) {
+            const count = await getGenerationCount(userId);
+            if (count >= FREE_GENERATION_LIMIT) {
+                res.status(403).json({ error: 'Free generation limit reached. Upgrade for unlimited.', code: 'LIMIT_REACHED' });
+                return;
+            }
+        }
+    }
+
     const systemPrompt = `You are an agency-grade local SEO strategist and conversion copywriter. Generate a client-ready local service landing page draft that feels specific to the suburb, service, and buyer intent.
 
 CRITICAL RULES:
@@ -100,54 +161,39 @@ The output MUST be a valid JSON object with exactly these keys:
     Local Context: ${localContext || 'None provided'}
     `;
 
-    const apiEndpoint = 'https://api.groq.com/openai/v1/chat/completions';
-
-    const requestPayload = {
-        model: "llama-3.3-70b-versatile",
-        messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 2000
-    };
-
     try {
-        const response = await fetch(apiEndpoint, {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestPayload)
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.7,
+                max_tokens: 2000
+            })
         });
 
         if (!response.ok) {
             const errBody = await response.text();
-            throw new Error(`Groq API returned status ${response.status}: ${errBody}`);
+            throw new Error(`Groq API status ${response.status}: ${errBody}`);
         }
 
         const data = await response.json();
-        
-        // Extract output content
         const responseText = data.choices?.[0]?.message?.content;
-        if (!responseText) {
-            throw new Error('Groq API response structure is invalid.');
-        }
+        if (!responseText) throw new Error('Groq API response structure is invalid.');
 
-        // Parse and return content JSON
         const parsedContent = extractJsonObject(responseText);
-        
-        res.status(200).json({
-            suburb: suburb,
-            content: parsedContent
-        });
+        res.status(200).json({ suburb, content: parsedContent });
 
     } catch (error) {
         console.error("Serverless API Error:", error);
-        res.status(500).json({ 
-            error: `Groq API Generation error: ${error.message}` 
-        });
+        res.status(500).json({ error: `Generation error: ${error.message}` });
     }
 };
