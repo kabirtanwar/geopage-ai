@@ -70,7 +70,7 @@ async function onAuthSuccess(user) {
         const { data } = await db
             .from('user_subscriptions')
             .select('status')
-            .eq('user_id', user.id)
+            .eq('email', user.email)
             .limit(1)
             .maybeSingle();
 
@@ -187,7 +187,7 @@ async function refreshGenerationCount() {
         const { data } = await db
             .from('user_usage')
             .select('generation_count')
-            .eq('user_id', currentUser.id)
+            .eq('email', currentUser.email)
             .limit(1)
             .maybeSingle();
         freeGenerationCount = data ? data.generation_count : 0;
@@ -206,7 +206,7 @@ async function incrementGenerationCount() {
         const { data } = await db
             .from('user_usage')
             .select('generation_count')
-            .eq('user_id', currentUser.id)
+            .eq('email', currentUser.email)
             .limit(1)
             .maybeSingle();
 
@@ -214,11 +214,11 @@ async function incrementGenerationCount() {
             await db
                 .from('user_usage')
                 .update({ generation_count: data.generation_count + 1, updated_at: new Date().toISOString() })
-                .eq('user_id', currentUser.id);
+                .eq('email', currentUser.email);
         } else {
             await db
                 .from('user_usage')
-                .insert({ user_id: currentUser.id, generation_count: 1 });
+                .insert({ email: currentUser.email, user_id: currentUser.id, generation_count: 1 });
         }
         freeGenerationCount++;
     } catch {

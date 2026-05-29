@@ -53,14 +53,14 @@ async function verifyAuth(token) {
         const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_SERVICE_KEY } });
         if (!r.ok) return null;
         const u = await r.json();
-        return u.id || null;
+        return u.email || null;
     } catch { return null; }
 }
 
-async function checkPaidStatus(userId) {
-    if (!userId || !SUPABASE_SERVICE_KEY) return false;
+async function checkPaidStatus(userEmail) {
+    if (!userEmail || !SUPABASE_SERVICE_KEY) return false;
     try {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/user_subscriptions?user_id=eq.${userId}&status=eq.active&select=status`, {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/user_subscriptions?email=eq.${encodeURIComponent(userEmail)}&status=eq.active&select=status`, {
             headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' }
         });
         if (!r.ok) return false;
@@ -69,10 +69,10 @@ async function checkPaidStatus(userId) {
     } catch { return false; }
 }
 
-async function getGenerationCount(userId) {
-    if (!userId || !SUPABASE_SERVICE_KEY) return 0;
+async function getGenerationCount(userEmail) {
+    if (!userEmail || !SUPABASE_SERVICE_KEY) return 0;
     try {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/user_usage?user_id=eq.${userId}&select=generation_count`, {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/user_usage?email=eq.${encodeURIComponent(userEmail)}&select=generation_count`, {
             headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`, 'Content-Type': 'application/json' }
         });
         if (!r.ok) return 0;
@@ -434,12 +434,12 @@ module.exports = async (req, res) => {
 
     const authHeader = req.headers.authorization;
     const token = authHeader?.replace('Bearer ', '');
-    const userId = await verifyAuth(token);
+    const userEmail = await verifyAuth(token);
 
-    if (userId) {
-        const isPaid = await checkPaidStatus(userId);
+    if (userEmail) {
+        const isPaid = await checkPaidStatus(userEmail);
         if (!isPaid) {
-            const count = await getGenerationCount(userId);
+            const count = await getGenerationCount(userEmail);
             if (count >= FREE_GENERATION_LIMIT) {
                 res.status(403).json({ error: 'Free generation limit reached. Upgrade for unlimited.', code: 'LIMIT_REACHED' });
                 return;
