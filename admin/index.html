@@ -153,10 +153,17 @@
                 <h2>Actions</h2>
                 <div class="actions-grid">
                     <button class="btn btn-primary" id="runScoring">Run Lead Scoring</button>
+                    <button class="btn btn-primary" id="runScraper">Run Lead Scraper</button>
+                    <button class="btn btn-success" id="sendOutreach">Send Outreach Batch</button>
                     <button class="btn btn-primary" id="runAnalytics">Run Analytics</button>
                     <button class="btn btn-primary" id="runOptimization">Run Optimization</button>
-                    <button class="btn btn-primary" id="generateOutreach">Generate Outreach Batch</button>
                     <button class="btn btn-secondary" id="exportMetrics">Export Metrics CSV</button>
+                </div>
+                <div style="margin-top:20px;">
+                    <h3>Import Leads (CSV)</h3>
+                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:10px;">Format: name, email, platform, niche, location (one per line)</p>
+                    <textarea id="csvImport" rows="6" placeholder="John Doe, john@agency.com, twitter, plumbing, Houston&#10;Jane Smith, jane@seo.co, linkedin, seo/marketing, Denver" style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-primary);font-family:monospace;font-size:0.85rem;resize:vertical;"></textarea>
+                    <button class="btn btn-primary" id="importCsv" style="margin-top:8px;">Import CSV</button>
                 </div>
                 <div id="actionLog" class="log-list" style="margin-top: 20px;"></div>
             </section>

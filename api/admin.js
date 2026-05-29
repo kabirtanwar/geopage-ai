@@ -155,6 +155,33 @@ module.exports = async (req, res) => {
                 res.status(200).json({ active: await isKillSwitchActive() });
                 break;
             }
+            case 'import-leads': {
+                if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
+                const importBody = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+                const csvLeads = importBody.leads || [];
+                let imported = 0;
+                for (const lead of csvLeads) {
+                    const result = await dbInsert('leads', {
+                        name: lead.name || '',
+                        platform: lead.platform || 'csv',
+                        handle: lead.handle || lead.twitter || '',
+                        niche: lead.niche || '',
+                        location: lead.location || '',
+                        email: lead.email || '',
+                        pain_score: 0,
+                        response_probability: 0,
+                        tier: 'cold',
+                        status: 'new',
+                        touches: 0,
+                        notes: lead.notes || '',
+                        source: 'csv_import',
+                        metadata: {}
+                    });
+                    if (result) imported++;
+                }
+                res.status(200).json({ imported, total: csvLeads.length });
+                break;
+            }
             case 'add-lead':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
                 const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});

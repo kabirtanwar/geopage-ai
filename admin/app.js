@@ -243,6 +243,22 @@ document.getElementById('runScoring').addEventListener('click', async () => {
     loadSection('leads');
 });
 
+document.getElementById('runScraper').addEventListener('click', async () => {
+    logAction('Running lead scraper...');
+    const result = await apiGet('metrics'); // Placeholder — scraper runs via cron
+    logAction('Scraper triggered. Results will appear in leads table after cron runs.');
+});
+
+document.getElementById('sendOutreach').addEventListener('click', async () => {
+    logAction('Generating outreach batch...');
+    const result = await fetch(OUTREACH_API, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ route: 'generate', count: 20 })
+    }).then(r => r.json());
+    logAction(`Generated ${result.count || 0} messages. Emails will be sent on next cron run.`);
+});
+
 document.getElementById('runAnalytics').addEventListener('click', async () => {
     logAction('Running analytics...');
     await apiGet('metrics');
@@ -257,19 +273,19 @@ document.getElementById('runOptimization').addEventListener('click', async () =>
     loadSection('optimization');
 });
 
-document.getElementById('generateShowcases').addEventListener('click', async () => {
-    logAction('Showcase generation queued. Run via /api/cron for full generation.');
-    loadSection('showcases');
-});
-
-document.getElementById('generateOutreach').addEventListener('click', async () => {
-    logAction('Generating outreach batch...');
-    const result = await fetch(OUTREACH_API, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ route: 'generate', count: 50 })
-    }).then(r => r.json());
-    logAction(`Generated ${result.count || 0} messages.`);
+document.getElementById('importCsv').addEventListener('click', async () => {
+    const csv = document.getElementById('csvImport').value.trim();
+    if (!csv) { logAction('No CSV data to import.'); return; }
+    const lines = csv.split('\n').filter(l => l.trim());
+    const leads = lines.map(line => {
+        const [name, email, platform, niche, location] = line.split(',').map(s => s.trim());
+        return { name, email, platform, niche, location };
+    });
+    logAction(`Importing ${leads.length} leads...`);
+    const result = await apiPost('import-leads', { leads });
+    logAction(`Imported ${result.imported || 0} of ${leads.length} leads.`);
+    document.getElementById('csvImport').value = '';
+    loadSection('leads');
 });
 
 document.getElementById('exportMetrics').addEventListener('click', async () => {

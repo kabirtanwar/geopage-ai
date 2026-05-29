@@ -2,6 +2,8 @@
 const { dbSelect, dbInsert, dbUpdate } = require('../lib/db');
 const { scoreAllLeads } = require('../lib/lead-scorer');
 const { analyzePerformance, generateRecommendations, calculateChannelAllocation } = require('../lib/self-healer');
+const { runScraper } = require('../lib/scraper');
+const { runOutreachBatch } = require('../lib/email-sender');
 
 async function isKillSwitchActive() {
     const rows = await dbSelect('system_config', { key: 'kill_switch' });
@@ -49,10 +51,24 @@ module.exports = async (req, res) => {
             res.status(200).json({ status: 'paused', message: 'Kill switch active. All cron jobs paused.', timestamp: new Date().toISOString() });
             return;
         }
+
         const results = {};
+
+        // 1. Scrape new leads
+        results.scraping = await runScraper();
+
+        // 2. Score all leads
         results.scoring = await runScoring();
+
+        // 3. Send outreach to eligible leads
+        results.outreach = await runOutreachBatch(20);
+
+        // 4. Analytics
         results.analytics = await runAnalytics();
+
+        // 5. Optimization
         results.optimization = await runOptimization();
+
         results.timestamp = new Date().toISOString();
         results.status = 'completed';
         res.status(200).json(results);

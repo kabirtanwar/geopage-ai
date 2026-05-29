@@ -5,7 +5,7 @@
     "api/generate.js": { "maxDuration": 30 },
     "api/admin.js": { "maxDuration": 10 },
     "api/outreach.js": { "maxDuration": 10 },
-    "api/cron.js": { "maxDuration": 30 },
+    "api/cron.js": { "maxDuration": 60 },
     "api/webhook.js": { "maxDuration": 10 }
   },
   "rewrites": [
