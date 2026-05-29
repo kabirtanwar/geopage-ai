@@ -3,6 +3,9 @@ const fetch = require('node-fetch');
 const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const FREE_GENERATION_LIMIT = 3;
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max requests per window per IP
+const rateLimits = new Map();
 
 function parseRequestBody(body) {
     if (!body) return {};
@@ -398,6 +401,17 @@ module.exports = async (req, res) => {
 
     if (req.method === 'OPTIONS') { res.status(200).end(); return; }
     if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+    // Rate limiting
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
+    const now = Date.now();
+    const requests = (rateLimits.get(ip) || []).filter(t => now - t < RATE_LIMIT_WINDOW);
+    if (requests.length >= RATE_LIMIT_MAX) {
+        res.status(429).json({ error: 'Rate limit exceeded. Try again in a minute.' });
+        return;
+    }
+    requests.push(now);
+    rateLimits.set(ip, requests);
 
     const body = parseRequestBody(req.body);
     const businessName = String(body.businessName || '').trim();

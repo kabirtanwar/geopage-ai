@@ -3,6 +3,11 @@ const { dbSelect, dbInsert, dbUpdate } = require('../lib/db');
 const { scoreAllLeads } = require('../lib/lead-scorer');
 const { analyzePerformance, generateRecommendations, calculateChannelAllocation } = require('../lib/self-healer');
 
+async function isKillSwitchActive() {
+    const rows = await dbSelect('system_config', { key: 'kill_switch' });
+    return rows.length > 0 && rows[0].value === 'true';
+}
+
 async function runScoring() {
     const leads = await dbSelect('leads');
     if (leads.length === 0) return { action: 'scoring', result: 'no leads to score' };
@@ -40,6 +45,10 @@ async function runOptimization() {
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     try {
+        if (await isKillSwitchActive()) {
+            res.status(200).json({ status: 'paused', message: 'Kill switch active. All cron jobs paused.', timestamp: new Date().toISOString() });
+            return;
+        }
         const results = {};
         results.scoring = await runScoring();
         results.analytics = await runAnalytics();

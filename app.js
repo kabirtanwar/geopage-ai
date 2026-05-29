@@ -152,18 +152,6 @@ async function handleAuthSubmit(event, mode) {
     track('auth_submitted', { mode });
 }
 
-async function handleGoogleAuth() {
-    track('auth_google_clicked');
-    const { error } = await db.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin }
-    });
-    if (error) {
-        track('auth_error', { mode: 'google', error: error.message });
-        alert(error.message);
-    }
-}
-
 async function handleLogout() {
     await db.auth.signOut();
     track('user_signed_out');
@@ -824,11 +812,16 @@ function handleContactSubmit(event) {
     }, 2000);
 }
 
-function handleEmailCapture(event) {
+async function handleEmailCapture(event) {
     event.preventDefault();
     const email = document.getElementById('captureEmail').value;
     if (email) {
-        localStorage.setItem('geopage_captured_email', email);
+        try {
+            await db.from('email_subscribers').insert({ email, source: 'landing_page', created_at: new Date().toISOString() });
+        } catch (e) {
+            // Fallback to localStorage if table doesn't exist
+            localStorage.setItem('geopage_captured_email', email);
+        }
         track('email_captured', { email });
         event.target.reset();
         const btn = event.target.querySelector('button[type="submit"]');

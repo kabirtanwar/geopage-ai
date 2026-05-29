@@ -1,26 +1,18 @@
 // Admin API — Central command center backend (Supabase-backed)
 const { dbSelect, dbInsert, dbUpdate, dbCount } = require('../lib/db');
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+async function isKillSwitchActive() {
+    const rows = await dbSelect('system_config', { key: 'kill_switch' });
+    return rows.length > 0 && rows[0].value === 'true';
+}
 
-async function verifyAdmin(req) {
-    if (ADMIN_EMAILS.length === 0) return true;
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.replace('Bearer ', '');
-    if (!token) return false;
-
-    const fetch = require('node-fetch');
-    const SUPABASE_URL = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
-    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmb2VqeWZtaHpqc21xeHJkYXpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NDk1NjEsImV4cCI6MjA5NTUyNTU2MX0.lN4NDJKF3rXkCKiCxIlkcl8AVWbGoe7KvpUzTM2FSH8';
-
-    try {
-        const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-            headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
-        });
-        if (!r.ok) return false;
-        const user = await r.json();
-        return ADMIN_EMAILS.includes((user.email || '').toLowerCase());
-    } catch { return false; }
+async function setKillSwitch(active) {
+    const rows = await dbSelect('system_config', { key: 'kill_switch' });
+    if (rows.length > 0) {
+        await dbUpdate('system_config', { value: active ? 'true' : 'false', updated_at: new Date().toISOString() }, { key: 'kill_switch' });
+    } else {
+        await dbInsert('system_config', { key: 'kill_switch', value: active ? 'true' : 'false', created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+    }
 }
 
 async function getMetrics() {
@@ -140,10 +132,6 @@ module.exports = async (req, res) => {
     const url = new URL(req.url, `https://${req.headers.host}`);
     const route = url.searchParams.get('route') || 'metrics';
 
-    if (!(await verifyAdmin(req))) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-
     try {
         switch (route) {
             case 'metrics': res.status(200).json(await getMetrics()); break;
@@ -156,6 +144,17 @@ module.exports = async (req, res) => {
             }
             case 'recommendations': res.status(200).json(await getRecommendations()); break;
             case 'showcases': res.status(200).json(await dbSelect('showcase_assets')); break;
+            case 'kill-switch': {
+                if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
+                const ksBody = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+                await setKillSwitch(ksBody.active === true);
+                res.status(200).json({ active: ksBody.active === true });
+                break;
+            }
+            case 'kill-switch-status': {
+                res.status(200).json({ active: await isKillSwitchActive() });
+                break;
+            }
             case 'add-lead':
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
                 const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});

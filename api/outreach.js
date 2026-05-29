@@ -2,6 +2,11 @@
 const { dbSelect, dbInsert, dbUpdate } = require('../lib/db');
 const { generateBatch } = require('../lib/outreach-engine');
 
+async function isKillSwitchActive() {
+    const rows = await dbSelect('system_config', { key: 'kill_switch' });
+    return rows.length > 0 && rows[0].value === 'true';
+}
+
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,6 +44,7 @@ module.exports = async (req, res) => {
             }
             case 'execute': {
                 if (req.method !== 'POST') { res.status(405).json({ error: 'POST required' }); return; }
+                if (await isKillSwitchActive()) { res.status(200).json({ executed: 0, paused: true }); return; }
                 const execBody = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
                 for (const msg of (execBody.messages || [])) {
                     await dbInsert('outreach_log', {
@@ -49,7 +55,8 @@ module.exports = async (req, res) => {
                         message_text: msg.message_text,
                         replied: false,
                         trial_given: false,
-                        converted: false
+                        converted: false,
+                        sent_at: new Date().toISOString()
                     });
                     await dbUpdate('leads', { touches: msg.touches || 0, last_touch: new Date().toISOString(), status: 'contacted' }, { id: msg.lead_id });
                 }

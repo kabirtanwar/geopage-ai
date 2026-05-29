@@ -274,7 +274,19 @@ document.getElementById('generateOutreach').addEventListener('click', async () =
 
 document.getElementById('exportMetrics').addEventListener('click', async () => {
     const metrics = await apiGet('metrics');
-    const csv = Object.entries(metrics).map(([k, v]) => `${k},${typeof v === 'object' ? JSON.stringify(v) : v}`).join('\n');
+    const flatten = (obj, prefix = '') => {
+        const rows = [];
+        for (const [k, v] of Object.entries(obj)) {
+            const key = prefix ? `${prefix}.${k}` : k;
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+                rows.push(...flatten(v, key));
+            } else {
+                rows.push(`${key},${typeof v === 'object' ? JSON.stringify(v) : v}`);
+            }
+        }
+        return rows;
+    };
+    const csv = flatten(metrics).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -283,13 +295,16 @@ document.getElementById('exportMetrics').addEventListener('click', async () => {
 });
 
 // Kill Switch
-document.getElementById('killSwitch').addEventListener('click', () => {
-    if (confirm('KILL SWITCH: This will pause all automated outreach. Continue?')) {
-        localStorage.setItem('geopage_kill_switch', 'true');
-        document.getElementById('statusBadge').textContent = 'System Paused';
-        document.getElementById('statusBadge').style.color = 'var(--danger)';
-        logAction('KILL SWITCH ACTIVATED. All outreach paused.');
-        showToast('Kill switch activated', 'error');
+document.getElementById('killSwitch').addEventListener('click', async () => {
+    const badge = document.getElementById('statusBadge');
+    const isPaused = badge.textContent === 'System Paused';
+    const action = isPaused ? 'resume' : 'pause';
+    if (confirm(isPaused ? 'Resume all automated outreach?' : 'KILL SWITCH: This will pause all automated outreach. Continue?')) {
+        await apiPost('kill-switch', { active: !isPaused });
+        badge.textContent = isPaused ? 'System Online' : 'System Paused';
+        badge.style.color = isPaused ? '' : 'var(--danger)';
+        logAction(isPaused ? 'Kill switch deactivated. Outreach resumed.' : 'KILL SWITCH ACTIVATED. All outreach paused.');
+        showToast(isPaused ? 'Outreach resumed' : 'Kill switch activated', isPaused ? 'info' : 'error');
     }
 });
 
