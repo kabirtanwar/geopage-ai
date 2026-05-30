@@ -133,18 +133,33 @@ async function handleAuthSubmit(event, mode) {
         ? document.getElementById('signup-name').value : '';
 
     let result;
-    if (mode === 'signup') {
-        result = await db.auth.signUp({
-            email, password,
-            options: { data: { full_name: name } }
-        });
-    } else {
-        result = await db.auth.signInWithPassword({ email, password });
+    try {
+        if (mode === 'signup') {
+            result = await db.auth.signUp({
+                email, password,
+                options: { data: { full_name: name } }
+            });
+        } else {
+            result = await db.auth.signInWithPassword({ email, password });
+        }
+    } catch (e) {
+        track('auth_error', { mode, error: e.message });
+        alert('Something went wrong. Please try again.');
+        return;
     }
 
-    if (result.error) {
+    // If signUp returned a user, treat as success even if there was a non-critical error
+    if (result.error && !result.data?.user) {
         track('auth_error', { mode, error: result.error.message });
-        alert(result.error.message);
+        if (result.error.message.includes('already registered')) {
+            alert('This email is already registered. Try logging in instead.');
+        } else if (result.error.message.includes('valid email')) {
+            alert('Please enter a valid email address.');
+        } else if (result.error.message.includes('password')) {
+            alert('Password must be at least 6 characters.');
+        } else {
+            alert('Could not create account. Please try again.');
+        }
         return;
     }
 
@@ -290,6 +305,87 @@ function nextStep(step) {
     if (badge) badge.textContent = step;
 }
 
+const STYLE_PALETTES = {
+    trust: {
+        heroGradient: 'linear-gradient(135deg, #1e293b, #0f172a)',
+        heroColor: 'white',
+        ctaColor: '#10b981',
+        ctaHover: '#059669',
+        accentBorder: '#10b981',
+        headerBg: '#1f2937',
+        serviceBg: '#f0fdf4',
+        serviceBorder: '#bbf7d0',
+        serviceText: '#166534',
+        ctaText: 'Get a Free Estimate',
+        tagline: 'Warm, community-rooted'
+    },
+    premium: {
+        heroGradient: 'linear-gradient(135deg, #1e1b4b, #312e81)',
+        heroColor: 'white',
+        ctaColor: '#6366f1',
+        ctaHover: '#4f46e5',
+        accentBorder: '#818cf8',
+        headerBg: '#1e1b4b',
+        serviceBg: '#eef2ff',
+        serviceBorder: '#c7d2fe',
+        serviceText: '#3730a3',
+        ctaText: 'Schedule a Consultation',
+        tagline: 'Polished, high-end'
+    },
+    emergency: {
+        heroGradient: 'linear-gradient(135deg, #7f1d1d, #991b1b)',
+        heroColor: 'white',
+        ctaColor: '#dc2626',
+        ctaHover: '#b91c1c',
+        accentBorder: '#f87171',
+        headerBg: '#991b1b',
+        serviceBg: '#fef2f2',
+        serviceBorder: '#fecaca',
+        serviceText: '#991b1b',
+        ctaText: 'Call Now — 24/7 Emergency',
+        tagline: 'Urgent, conversion-focused'
+    },
+    community: {
+        heroGradient: 'linear-gradient(135deg, #065f46, #047857)',
+        heroColor: 'white',
+        ctaColor: '#059669',
+        ctaHover: '#047857',
+        accentBorder: '#34d399',
+        headerBg: '#065f46',
+        serviceBg: '#ecfdf5',
+        serviceBorder: '#a7f3d0',
+        serviceText: '#065f46',
+        ctaText: 'Join Your Neighbors',
+        tagline: 'Friendly, local feel'
+    },
+    minimal: {
+        heroGradient: 'linear-gradient(135deg, #111827, #1f2937)',
+        heroColor: 'white',
+        ctaColor: '#111827',
+        ctaHover: '#1f2937',
+        accentBorder: '#6b7280',
+        headerBg: '#111827',
+        serviceBg: '#f9fafb',
+        serviceBorder: '#e5e7eb',
+        serviceText: '#374151',
+        ctaText: 'Get Started',
+        tagline: 'Clean, modern'
+    },
+    commercial: {
+        heroGradient: 'linear-gradient(135deg, #1e3a5f, #1e40af)',
+        heroColor: 'white',
+        ctaColor: '#2563eb',
+        ctaHover: '#1d4ed8',
+        accentBorder: '#60a5fa',
+        headerBg: '#1e3a5f',
+        serviceBg: '#eff6ff',
+        serviceBorder: '#bfdbfe',
+        serviceText: '#1e40af',
+        ctaText: 'Request Site Assessment',
+        tagline: 'B2B, operational'
+    }
+};
+
 function selectPageStyle(style) {
     selectedPageStyle = style;
     document.querySelectorAll('.style-card').forEach(card => {
@@ -300,6 +396,8 @@ function selectPageStyle(style) {
     const titleEl = document.getElementById('previewTitle');
     const styleNames = { trust: 'Local Trust', premium: 'Premium Service', emergency: 'Emergency Conversion', community: 'Community-Focused', minimal: 'Minimal Clean', commercial: 'Commercial' };
     if (titleEl) titleEl.textContent = `Live Preview — ${styleNames[style] || 'Local Trust'}`;
+    // Re-render preview with new style
+    updateLivePreview();
 }
 
 // Open and Close Paywall Modal
@@ -853,6 +951,14 @@ function initLivePreview() {
     if (businessService) businessService.addEventListener('input', updateLivePreview);
     if (baseCity) baseCity.addEventListener('input', updateLivePreview);
     if (suburbs) suburbs.addEventListener('input', updateLivePreview);
+
+    // Attach style card click listeners
+    document.querySelectorAll('.style-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const style = card.dataset.style;
+            if (style) selectPageStyle(style);
+        });
+    });
 }
 
 function renderDefaultPreview() {
@@ -921,6 +1027,7 @@ function updateLivePreview() {
     browserUrl.textContent = `https://${slug}.com/${suburbSlug}`;
 
     const viewport = document.getElementById('previewViewport');
+    const palette = STYLE_PALETTES[selectedPageStyle] || STYLE_PALETTES.trust;
     const watermarkHTML = !isProUser ? `
         <div style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:10px 20px;text-align:center;">
             <span style="font-size:0.75rem;color:#9ca3af;">Generated with <a href="https://geopage.ai" style="color:#6366f1;text-decoration:none;font-weight:600;">GeoPage AI</a></span>
@@ -929,24 +1036,27 @@ function updateLivePreview() {
 
     viewport.innerHTML = `
         <div class="suburb-page-preview">
-            <div class="preview-header">
+            <div class="preview-header" style="background:${palette.headerBg}">
                 <span style="font-weight: 700;">${escapeHtml(displayName)}</span>
-                <span style="background-color: #10b981; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call Now</span>
+                <span style="background-color: ${palette.ctaColor}; padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: white;">Call Now</span>
             </div>
-            <div class="preview-hero">
+            <div class="preview-hero" style="background:${palette.heroGradient};color:${palette.heroColor}">
                 <h3>${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}</h3>
-                <p>Your trusted local ${escapeHtml(displayService.toLowerCase())} partner servicing the ${escapeHtml(displaySuburb)} community in the ${escapeHtml(displayCity)} area.</p>
+                <p style="color:${palette.heroColor};opacity:0.85">Your trusted local ${escapeHtml(displayService.toLowerCase())} partner servicing the ${escapeHtml(displaySuburb)} community in the ${escapeHtml(displayCity)} area.</p>
             </div>
             <div style="padding:28px 24px;">
                 <h4 style="font-size:1.2rem;margin:0 0 12px;color:#111827;">Professional ${escapeHtml(displayService)} in ${escapeHtml(displaySuburb)}, ${escapeHtml(displayCity)}</h4>
                 <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 12px;">At ${escapeHtml(displayName)}, we deliver high-quality, reliable ${escapeHtml(displayService.toLowerCase())} to homes and businesses across ${escapeHtml(displaySuburb)}. Our experienced team handles jobs of every size with prompt scheduling and upfront pricing.</p>
                 <p style="color:#4b5563;font-size:0.92rem;line-height:1.65;margin:0 0 16px;">We know ${escapeHtml(displayService.toLowerCase())} problems need fast solutions. That is why we offer same-day availability, transparent quotes, and guaranteed workmanship on every service call in the ${escapeHtml(displaySuburb)} area.</p>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;">
-                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">${escapeHtml(displayService.split('&')[0].trim())}</span>
-                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Local Service</span>
-                    <span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:6px 12px;font-size:0.82rem;color:#334155;font-weight:600;">Free Estimates</span>
+                    <span style="background:${palette.serviceBg};border:1px solid ${palette.serviceBorder};border-radius:6px;padding:6px 12px;font-size:0.82rem;color:${palette.serviceText};font-weight:600;">${escapeHtml(displayService.split('&')[0].trim())}</span>
+                    <span style="background:${palette.serviceBg};border:1px solid ${palette.serviceBorder};border-radius:6px;padding:6px 12px;font-size:0.82rem;color:${palette.serviceText};font-weight:600;">Local Service</span>
+                    <span style="background:${palette.serviceBg};border:1px solid ${palette.serviceBorder};border-radius:6px;padding:6px 12px;font-size:0.82rem;color:${palette.serviceText};font-weight:600;">Free Estimates</span>
                 </div>
-                <a href="#" style="display:block;text-align:center;background-color:#6366f1;color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">Get a Free Estimate</a>
+                <div style="border-left:3px solid ${palette.accentBorder};padding:12px 16px;margin-bottom:18px;background:${palette.serviceBg};border-radius:0 8px 8px 0;">
+                    <p style="color:#4b5563;font-size:0.88rem;margin:0;font-style:italic;">Serving ${escapeHtml(displaySuburb)} and surrounding ${escapeHtml(displayCity)} areas with trusted local expertise.</p>
+                </div>
+                <a href="#" style="display:block;text-align:center;background-color:${palette.ctaColor};color:white;padding:12px 0;border-radius:6px;text-decoration:none;font-weight:600;font-size:0.95rem;">${palette.ctaText}</a>
             </div>
             ${watermarkHTML}
         </div>
