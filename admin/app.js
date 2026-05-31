@@ -263,8 +263,20 @@ document.getElementById('generateShowcases').addEventListener('click', async () 
     logAction('Generating showcase batch...');
     try {
         const result = await fetch('/api/factory', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.json());
-        logAction(`Generated ${result.success || 0} showcases (${result.failed || 0} failed). Batch ${result.batch_size || 0}/${result.total || 0}`);
-        loadShowcases();
+        logAction(`Generated ${result.success || 0} showcases (${result.failed || 0} failed). Batch ${result.batch_size || 0}/${result.total || 0} total.`);
+        if (result.results && result.results.length > 0) {
+            const listDiv = document.getElementById('showcaseList');
+            if (listDiv.innerHTML === '' || listDiv.innerHTML.includes('No showcases')) {
+                listDiv.innerHTML = '';
+            }
+            for (const s of result.results) {
+                listDiv.innerHTML += `<div class="showcase-item">
+                    <div class="niche">${s.niche || 'general'}</div>
+                    <div class="suburb">${s.suburb || 'Unknown'}</div>
+                    <div class="style">${s.style || 'default'} · ${s.status || 'pending'}</div>
+                </div>`;
+            }
+        }
     } catch (err) {
         logAction(`Showcase generation error: ${err.message}`);
     }
