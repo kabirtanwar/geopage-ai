@@ -3,36 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoPage AI - Local SEO Suburb Page Generator</title>
-    <meta name="description" content="Generate highly optimized, non-duplicate local service pages for your target suburbs in seconds. Boost your local Google rankings on autopilot.">
-    <!-- Google Fonts: Classic Serif (Playfair Display) + Modern Geometric (Plus Jakarta Sans) -->
+    <title>GeoPage AI — Agency Fulfillment Infrastructure for Local SEO</title>
+    <meta name="description" content="Scale local SEO fulfillment without expanding your team. Generate deploy-ready suburb pages in minutes, not days. Commercial rights included.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <!-- JSZip for packaging files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Supabase Auth -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Lemon Squeezy Overlay Checkout -->
     <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
-    <!-- PostHog Analytics -->
     <script>
         !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
         posthog.init('phc_AHQc5qbVzNsTdF8eCEoLKJYpyCLgYoeCck3MoP7CfTmD', {api_host: 'https://us.i.posthog.com'});
     </script>
 </head>
 <body>
-    <!-- Shifting background shapes -->
     <div class="background-decor">
         <div class="glow-orb orb-1"></div>
         <div class="glow-orb orb-2"></div>
         <div class="glow-orb orb-3"></div>
     </div>
 
-    <!-- Premium Navigation -->
     <header>
         <div class="container nav-container">
             <div class="logo">
@@ -40,14 +32,14 @@
                 <span class="logo-text">GeoPage <span class="accent-text">AI</span></span>
             </div>
             <nav class="nav-links">
-                <a href="#examples">Examples</a>
-                <a href="#demo-pages">Demo Pages</a>
-                <a href="#founder">Founder Note</a>
+                <a href="#showcase">Output</a>
+                <a href="#economics">Economics</a>
+                <a href="#rights">Rights</a>
                 <a href="#faq">FAQ</a>
-                <a href="#pricing">Lifetime Deal</a>
+                <a href="#pricing">License</a>
             </nav>
             <div class="auth-buttons" id="authButtons">
-                <button class="btn-text-auth" onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })">Lifetime Deal</button>
+                <button class="btn-text-auth" onclick="document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })">Founding License</button>
                 <button class="btn-text-auth" id="navLoginBtn" onclick="openAuthModal('login')">Log In</button>
                 <button class="btn btn-primary btn-sm nav-cta" id="navCtaBtn" onclick="scrollToGenerator()">Generate Free <i class="fa-solid fa-rocket"></i></button>
                 <div class="user-menu" id="userMenu" style="display:none;">
@@ -66,14 +58,15 @@
     </header>
 
     <main class="container">
-        <!-- Hero Section -->
+
+        <!-- PHASE 1: Hero Repositioning -->
         <section class="hero">
-            <div class="hero-kicker">Agency scaling infrastructure for local SEO</div>
-            <h1>Handle 50+ Suburb Pages <span class="gradient-text">Without Hiring More Writers</span></h1>
-            <p class="hero-subtitle">GeoPage AI turns one service brief into unique, deploy-ready suburb landing pages. SEO metadata, localized copy, live previews, and plain HTML ZIP export. Ship client deliverables in minutes, not days.</p>
+            <div class="hero-kicker">Agency fulfillment infrastructure</div>
+            <h1>Scale Local SEO Fulfillment <span class="gradient-text">Without Expanding Your Team</span></h1>
+            <p class="hero-subtitle">Turn one service brief into 50 client-ready location pages. Unique copy per suburb, complete SEO metadata, live previews, and deploy-ready HTML exports. Deliver in minutes what used to take days.</p>
             <div class="hero-actions">
                 <button class="btn btn-success glow-button" onclick="scrollToGenerator()">Generate Client-Ready Pages <i class="fa-solid fa-arrow-right"></i></button>
-                <a href="#demo-pages" class="btn btn-secondary proof-link"><i class="fa-solid fa-eye"></i> View Demo Output</a>
+                <a href="#showcase" class="btn btn-secondary proof-link"><i class="fa-solid fa-eye"></i> See What Agencies Deliver</a>
             </div>
             <div class="trust-strip">
                 <div><i class="fa-solid fa-circle-check"></i><span>3 pages free, no signup</span></div>
@@ -83,116 +76,163 @@
             </div>
         </section>
 
-        <section class="comparison-section" id="examples" aria-label="Before vs After workflow comparison">
-            <div class="section-copy comparison-heading">
-                <span class="section-kicker">The workflow shift</span>
-                <h2>Manual suburb pages VS GeoPage AI</h2>
-                <p>Most agencies still build local landing pages the same way: copy, paste, rename the suburb, repeat. Here is what changes.</p>
+        <!-- PHASE 7: Agency Economics Section (Claim → Proof) -->
+        <section class="economics-section" id="economics">
+            <div class="section-copy">
+                <span class="section-kicker">The margin difference</span>
+                <h2>Why Agencies Buy GeoPage AI</h2>
+                <p>Local SEO fulfillment is a volume business. The difference between profitable delivery and break-even operations is how fast you can produce quality location pages.</p>
             </div>
-            <div class="comparison-grid">
-                <div class="comparison-card comparison-before">
-                    <div class="comparison-label comparison-label-before">
-                        <i class="fa-solid fa-xmark"></i> Manual Workflow
+            <div class="economics-grid">
+                <div class="economics-card economics-card-before">
+                    <div class="economics-label">Traditional Process</div>
+                    <div class="economics-flow">
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-file-pen"></i></span>
+                            <span>Brief</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-user"></i></span>
+                            <span>Writer</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-pen-to-square"></i></span>
+                            <span>Editor</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <span>SEO Review</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-user-tie"></i></span>
+                            <span>Client</span>
+                        </div>
                     </div>
-                    <ul class="comparison-list">
-                        <li><i class="fa-solid fa-clock"></i> <span>45+ minutes per suburb page</span></li>
-                        <li><i class="fa-solid fa-copy"></i> <span>Copy-paste base page, rename suburb</span></li>
-                        <li><i class="fa-solid fa-triangle-exclamation"></i> <span>Duplicate content penalties risk</span></li>
-                        <li><i class="fa-solid fa-pen"></i> <span>Manually rewrite meta tags per page</span></li>
-                        <li><i class="fa-solid fa-folder-open"></i> <span>No structured export or packaging</span></li>
-                        <li><i class="fa-solid fa-user-clock"></i> <span>Writer handoffs slow delivery down</span></li>
-                    </ul>
-                    <div class="comparison-metric">
-                        <span class="metric-number">3-5 hours</span>
-                        <span class="metric-label">to build 10 suburb pages</span>
+                    <div class="economics-metric">
+                        <span class="metric-time">2–4 Days</span>
+                        <span class="metric-label">per campaign</span>
+                    </div>
+                    <div class="economics-cost">
+                        <span class="cost-label">Typical cost per campaign</span>
+                        <span class="cost-amount">$2,000 – $7,500</span>
                     </div>
                 </div>
-                <div class="comparison-divider">
-                    <div class="divider-line"></div>
-                    <span class="divider-badge">VS</span>
-                    <div class="divider-line"></div>
+                <div class="economics-vs">
+                    <span>VS</span>
                 </div>
-                <div class="comparison-card comparison-after">
-                    <div class="comparison-label comparison-label-after">
-                        <i class="fa-solid fa-check"></i> GeoPage AI Workflow
+                <div class="economics-card economics-card-after">
+                    <div class="economics-label economics-label-after">GeoPage AI</div>
+                    <div class="economics-flow">
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-file-pen"></i></span>
+                            <span>Brief</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span>Generate</span>
+                        </div>
+                        <div class="economics-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="economics-step">
+                            <span class="step-icon"><i class="fa-solid fa-file-zipper"></i></span>
+                            <span>Export</span>
+                        </div>
                     </div>
-                    <ul class="comparison-list">
-                        <li><i class="fa-solid fa-bolt"></i> <span>Generate suburb pages in seconds</span></li>
-                        <li><i class="fa-solid fa-wand-magic-sparkles"></i> <span>AI writes unique local copy per page</span></li>
-                        <li><i class="fa-solid fa-shield-halved"></i> <span>Distinct content avoids penalties</span></li>
-                        <li><i class="fa-solid fa-tag"></i> <span>SEO metadata auto-generated per suburb</span></li>
-                        <li><i class="fa-solid fa-file-zipper"></i> <span>ZIP export, deploy-ready HTML files</span></li>
-                        <li><i class="fa-solid fa-rocket"></i> <span>Ship client deliverables same day</span></li>
-                    </ul>
-                    <div class="comparison-metric comparison-metric-highlight">
-                        <span class="metric-number">~10 minutes</span>
-                        <span class="metric-label">to build 10 suburb pages</span>
+                    <div class="economics-metric economics-metric-highlight">
+                        <span class="metric-time">10 Minutes</span>
+                        <span class="metric-label">per campaign</span>
                     </div>
+                    <div class="economics-cost economics-cost-highlight">
+                        <span class="cost-label">GeoPage Founding License</span>
+                        <span class="cost-amount">$49</span>
+                    </div>
+                </div>
+            </div>
+            <div class="economics-summary">
+                <div class="economics-stat">
+                    <span class="stat-value">~97%</span>
+                    <span class="stat-desc">time reduction per campaign</span>
+                </div>
+                <div class="economics-stat">
+                    <span class="stat-value">50+</span>
+                    <span class="stat-desc">pages from one brief</span>
+                </div>
+                <div class="economics-stat">
+                    <span class="stat-value">40:1</span>
+                    <span class="stat-desc">margin vs traditional fulfillment</span>
                 </div>
             </div>
         </section>
 
-        <section class="demo-pages-section" id="demo-pages" aria-label="Niche-specific demo outputs">
-            <div class="section-copy demo-heading">
-                <span class="section-kicker">Client-ready examples</span>
-                <h2>Four niches agencies can sell this into immediately</h2>
-                <p>These are the kinds of deliverables GeoPage AI is built to produce: local, specific, readable, and easy to package for service-area campaigns.</p>
+        <!-- PHASE 3: Output Showcase System -->
+        <section class="showcase-section" id="showcase">
+            <div class="section-copy">
+                <span class="section-kicker">Real output, real niches</span>
+                <h2>See What Agencies Actually Deliver</h2>
+                <p>Every example below was generated from a single brief. Different industry, different suburb, different structure. This is what lands on your client's desk.</p>
             </div>
-            <div class="demo-page-grid">
-                <article class="demo-page-card" onclick="showcaseDemo('plumbing')" role="button" tabindex="0">
-                    <span class="demo-tag">Plumbing</span>
-                    <h3>Emergency Plumber in Sugar Land</h3>
-                    <p>A suburb page for urgent leak repair near Town Square, with 24/7 response language and estimate CTA.</p>
-                    <ul>
-                        <li>Meta title: "Emergency Plumber Sugar Land TX | 24/7 Leak Repair"</li>
-                        <li>Hero: "Fast Emergency Plumbing in Sugar Land, TX"</li>
-                        <li>Service copy with suburb landmarks</li>
-                        <li>Quote request sidebar CTA</li>
-                        <li>Local FAQ: "Do you serve Sugar Land full-time?"</li>
-                    </ul>
-                    <span class="demo-cta-link">View preview <i class="fa-solid fa-arrow-right"></i></span>
+            <div class="showcase-grid">
+                <article class="showcase-card" onclick="showcaseDemo('plumbing')" role="button" tabindex="0">
+                    <span class="showcase-tag">Plumbing</span>
+                    <div class="showcase-meta">
+                        <span class="showcase-meta-title">Meta: Emergency Plumber Sugar Land TX | 24/7 Leak Repair</span>
+                        <span class="showcase-meta-h1">H1: Fast Emergency Plumbing in Sugar Land, TX</span>
+                    </div>
+                    <p class="showcase-intro">Localized intro referencing Town Square, New Territory, Telfair neighborhoods. 24/7 response language with estimate CTA.</p>
+                    <div class="showcase-details">
+                        <span><i class="fa-solid fa-list"></i> 4 service items</span>
+                        <span><i class="fa-solid fa-circle-question"></i> 3 local FAQs</span>
+                        <span><i class="fa-solid fa-tag"></i> SEO metadata</span>
+                    </div>
+                    <span class="showcase-cta-link">View full preview <i class="fa-solid fa-arrow-right"></i></span>
                 </article>
-                <article class="demo-page-card" onclick="showcaseDemo('hvac')" role="button" tabindex="0">
-                    <span class="demo-tag">HVAC</span>
-                    <h3>AC Repair in Scottsdale Ranch</h3>
-                    <p>Targets high-heat service calls, fast diagnostics, maintenance plans, and neighborhood-specific comfort needs.</p>
-                    <ul>
-                        <li>Meta title: "AC Repair Scottsdale Ranch AZ | Fast Cooling Service"</li>
-                        <li>Hero: "Reliable AC Repair in Scottsdale Ranch"</li>
-                        <li>Seasonal urgency angle for Arizona heat</li>
-                        <li>Trust and technician credentials copy</li>
-                        <li>Local FAQ: "How quickly can you respond?"</li>
-                    </ul>
-                    <span class="demo-cta-link">View preview <i class="fa-solid fa-arrow-right"></i></span>
+                <article class="showcase-card" onclick="showcaseDemo('hvac')" role="button" tabindex="0">
+                    <span class="showcase-tag">HVAC</span>
+                    <div class="showcase-meta">
+                        <span class="showcase-meta-title">Meta: AC Repair Scottsdale Ranch AZ | Fast Cooling Service</span>
+                        <span class="showcase-meta-h1">H1: Reliable AC Repair in Scottsdale Ranch</span>
+                    </div>
+                    <p class="showcase-intro">Seasonal urgency for Arizona heat. NATE-certified language, same-day diagnostic offer, and maintenance plan upsell.</p>
+                    <div class="showcase-details">
+                        <span><i class="fa-solid fa-list"></i> 4 service items</span>
+                        <span><i class="fa-solid fa-circle-question"></i> 3 local FAQs</span>
+                        <span><i class="fa-solid fa-tag"></i> SEO metadata</span>
+                    </div>
+                    <span class="showcase-cta-link">View full preview <i class="fa-solid fa-arrow-right"></i></span>
                 </article>
-                <article class="demo-page-card" onclick="showcaseDemo('roofing')" role="button" tabindex="0">
-                    <span class="demo-tag">Roofing</span>
-                    <h3>Storm Roof Repair in Frisco</h3>
-                    <p>Built around hail damage, inspection requests, insurance-aware language, and local neighborhood coverage.</p>
-                    <ul>
-                        <li>Meta title: "Storm Roof Repair Frisco TX | Hail Damage Experts"</li>
-                        <li>Hero: "Storm Damage Roof Repair in Frisco, TX"</li>
-                        <li>Damage-specific positioning and urgency</li>
-                        <li>Inspection call-to-action with phone</li>
-                        <li>Local FAQ: "Do you help with insurance claims?"</li>
-                    </ul>
-                    <span class="demo-cta-link">View preview <i class="fa-solid fa-arrow-right"></i></span>
+                <article class="showcase-card" onclick="showcaseDemo('roofing')" role="button" tabindex="0">
+                    <span class="showcase-tag">Roofing</span>
+                    <div class="showcase-meta">
+                        <span class="showcase-meta-title">Meta: Storm Roof Repair Frisco TX | Hail Damage Experts</span>
+                        <span class="showcase-meta-h1">H1: Storm Damage Roof Repair in Frisco, TX</span>
+                    </div>
+                    <p class="showcase-intro">Insurance-aware copy. Inspection-driven CTA with damage documentation process for insurance adjusters.</p>
+                    <div class="showcase-details">
+                        <span><i class="fa-solid fa-list"></i> 4 service items</span>
+                        <span><i class="fa-solid fa-circle-question"></i> 3 local FAQs</span>
+                        <span><i class="fa-solid fa-tag"></i> SEO metadata</span>
+                    </div>
+                    <span class="showcase-cta-link">View full preview <i class="fa-solid fa-arrow-right"></i></span>
                 </article>
-                <article class="demo-page-card" onclick="showcaseDemo('dental')" role="button" tabindex="0">
-                    <span class="demo-tag">Dental</span>
-                    <h3>Family Dentist in Lakewood</h3>
-                    <p>Creates a calmer local page for families comparing preventive care, appointments, and trusted nearby practices.</p>
-                    <ul>
-                        <li>Meta title: "Family Dentist Lakewood CO | Preventive Dental Care"</li>
-                        <li>Hero: "Trusted Family Dentist in Lakewood, CO"</li>
-                        <li>Family-focused preventive care copy</li>
-                        <li>Appointment scheduling CTA</li>
-                        <li>Local FAQ: "Do you accept new patients?"</li>
-                    </ul>
-                    <span class="demo-cta-link">View preview <i class="fa-solid fa-arrow-right"></i></span>
+                <article class="showcase-card" onclick="showcaseDemo('dental')" role="button" tabindex="0">
+                    <span class="showcase-tag">Dental</span>
+                    <div class="showcase-meta">
+                        <span class="showcase-meta-title">Meta: Family Dentist Lakewood CO | Preventive Dental Care</span>
+                        <span class="showcase-meta-h1">H1: Trusted Family Dentist in Lakewood, CO</span>
+                    </div>
+                    <p class="showcase-intro">Family-focused preventive care angle. New patient language, insurance acceptance, and appointment scheduling CTA.</p>
+                    <div class="showcase-details">
+                        <span><i class="fa-solid fa-list"></i> 4 service items</span>
+                        <span><i class="fa-solid fa-circle-question"></i> 3 local FAQs</span>
+                        <span><i class="fa-solid fa-tag"></i> SEO metadata</span>
+                    </div>
+                    <span class="showcase-cta-link">View full preview <i class="fa-solid fa-arrow-right"></i></span>
                 </article>
             </div>
-            <!-- Showcase Preview Modal -->
             <div class="showcase-preview-container" id="showcasePreview" style="display:none;">
                 <div class="showcase-preview-header">
                     <h3 id="showcaseTitle">Preview</h3>
@@ -212,12 +252,435 @@
             </div>
         </section>
 
-        <!-- Visual Proof Section -->
+        <!-- PHASE 4: Output Variation Lab -->
+        <section class="variation-section" id="variation">
+            <div class="section-copy">
+                <span class="section-kicker">Not template spam</span>
+                <h2>Same Brief. Different Outputs.</h2>
+                <p>Most people assume AI-generated means identical content with swapped suburb names. GeoPage AI generates structurally distinct pages from the same input. Different CTAs, different intros, different FAQ sets, different section ordering.</p>
+            </div>
+            <div class="variation-demo">
+                <div class="variation-input">
+                    <span class="variation-input-label">Single Input</span>
+                    <div class="variation-input-card">
+                        <div><strong>Business:</strong> Apex Plumbing Solutions</div>
+                        <div><strong>Service:</strong> Emergency Plumbing & Leak Repair</div>
+                        <div><strong>Service Areas:</strong> Sugar Land, Katy, The Woodlands</div>
+                    </div>
+                </div>
+                <div class="variation-outputs">
+                    <div class="variation-card">
+                        <div class="variation-card-header" style="border-left-color: #6366f1;">
+                            <span class="variation-label">Output A — Sugar Land</span>
+                            <span class="variation-style">Style: Local Trust</span>
+                        </div>
+                        <div class="variation-content">
+                            <div class="variation-field"><span class="field-name">CTA</span><span class="field-value">Get a Free Estimate</span></div>
+                            <div class="variation-field"><span class="field-name">Hook</span><span class="field-value">Town Square, New Territory, Telfair</span></div>
+                            <div class="variation-field"><span class="field-name">FAQ</span><span class="field-value">After-hours service, response time, neighborhoods</span></div>
+                            <div class="variation-field"><span class="field-name">Sections</span><span class="field-value">Hero → Local Hook → Services → Process → FAQ → CTA</span></div>
+                        </div>
+                    </div>
+                    <div class="variation-card">
+                        <div class="variation-card-header" style="border-left-color: #10b981;">
+                            <span class="variation-label">Output B — Katy</span>
+                            <span class="variation-style">Style: Emergency</span>
+                        </div>
+                        <div class="variation-content">
+                            <div class="variation-field"><span class="field-name">CTA</span><span class="field-value">Call Now — 24/7 Emergency</span></div>
+                            <div class="variation-field"><span class="field-name">Hook</span><span class="field-value">Katy Mills, Cinco Ranch, flood-prone areas</span></div>
+                            <div class="variation-field"><span class="field-name">FAQ</span><span class="field-value">Emergency dispatch, pricing, sewer backup</span></div>
+                            <div class="variation-field"><span class="field-name">Sections</span><span class="field-value">Urgency → Hero → Services → CTA → FAQ</span></div>
+                        </div>
+                    </div>
+                    <div class="variation-card">
+                        <div class="variation-card-header" style="border-left-color: #f59e0b;">
+                            <span class="variation-label">Output C — The Woodlands</span>
+                            <span class="variation-style">Style: Premium</span>
+                        </div>
+                        <div class="variation-content">
+                            <div class="variation-field"><span class="field-name">CTA</span><span class="field-value">Schedule a Consultation</span></div>
+                            <div class="variation-field"><span class="field-name">Hook</span><span class="field-value">Waterway Avenue, master-planned communities</span></div>
+                            <div class="variation-field"><span class="field-name">FAQ</span><span class="field-value">New construction plumbing, HOA compliance, warranty</span></div>
+                            <div class="variation-field"><span class="field-name">Sections</span><span class="field-value">Hero → Intro → Trust → Services → Process → FAQ → CTA</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHASE 6: What GeoPage Does Not Do -->
+        <section class="boundaries-section" id="boundaries">
+            <div class="boundaries-grid">
+                <div class="boundaries-does-not">
+                    <div class="boundaries-header">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <h3>What GeoPage Does <span class="text-red">Not</span> Do</h3>
+                    </div>
+                    <ul class="boundaries-list boundaries-list-not">
+                        <li><i class="fa-solid fa-xmark"></i> <span>Guarantee rankings</span></li>
+                        <li><i class="fa-solid fa-xmark"></i> <span>Replace SEO strategy</span></li>
+                        <li><i class="fa-solid fa-xmark"></i> <span>Replace client communication</span></li>
+                        <li><i class="fa-solid fa-xmark"></i> <span>Replace relationship building</span></li>
+                    </ul>
+                </div>
+                <div class="boundaries-divider"></div>
+                <div class="boundaries-does">
+                    <div class="boundaries-header">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <h3>What GeoPage <span class="text-green">Does</span> Do</h3>
+                    </div>
+                    <ul class="boundaries-list boundaries-list-does">
+                        <li><i class="fa-solid fa-check"></i> <span>Eliminate repetitive page production</span></li>
+                        <li><i class="fa-solid fa-check"></i> <span>Accelerate fulfillment timelines</span></li>
+                        <li><i class="fa-solid fa-check"></i> <span>Generate deploy-ready assets</span></li>
+                        <li><i class="fa-solid fa-check"></i> <span>Help agencies scale delivery</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHASE 5: Commercial Rights Section -->
+        <section class="rights-section glass-panel" id="rights">
+            <div class="rights-content">
+                <span class="section-kicker">You own everything</span>
+                <h2>Commercial Usage Included</h2>
+                <p>No hidden licensing restrictions. No per-client fees. No attribution requirements. Every page you generate is yours to use however your agency needs.</p>
+            </div>
+            <div class="rights-grid">
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Sell generated pages to clients</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Use for agency fulfillment</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Use for lead generation sites</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Edit however you want</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>No royalties required</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>No attribution required</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Full ownership of exported assets</span>
+                </div>
+                <div class="rights-item">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>No per-client or per-campaign fees</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHASE 8: Pricing Reframe -->
+        <section class="pricing-section glass-panel" id="pricing">
+            <div class="pricing-header">
+                <span class="pricing-badge">Founding Agency License</span>
+                <h2>Early access to infrastructure pricing</h2>
+                <p>One payment. Lifetime access. Full commercial rights. No recurring fees.</p>
+            </div>
+            <div class="pricing-card-highlight">
+                <div class="pricing-card-left">
+                    <div class="pricing-label">Founding Agency License</div>
+                    <div class="pricing-amount"><span class="currency">$</span>49</div>
+                    <div class="pricing-period">one-time payment — no subscription</div>
+                    <ul class="pricing-features-list">
+                        <li><i class="fa-solid fa-check-circle"></i> Unlimited suburb page generation</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Clean exports, no watermark</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Commercial client license</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Deploy-ready HTML files</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Future core updates included</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Full ownership of all assets</li>
+                        <li><i class="fa-solid fa-check-circle"></i> Unlimited exports</li>
+                    </ul>
+                </div>
+                <div class="pricing-card-right">
+                    <div class="pricing-value-prop">
+                        <strong>Infrastructure, not software</strong>
+                        <p>You are not buying a subscription. You are acquiring agency fulfillment infrastructure that eliminates repetitive production work permanently.</p>
+                    </div>
+                    <div class="pricing-compare">
+                        <div class="pricing-compare-item">
+                            <span class="compare-label">Typical agency monthly SaaS</span>
+                            <span class="compare-value">$97–$297/mo</span>
+                        </div>
+                        <div class="pricing-compare-item">
+                            <span class="compare-label">Per-campaign content cost</span>
+                            <span class="compare-value">$500–$2,500</span>
+                        </div>
+                        <div class="pricing-compare-item pricing-compare-divider">
+                            <span class="compare-label">GeoPage Founding License</span>
+                            <span class="compare-value compare-value-highlight">$49 once</span>
+                        </div>
+                    </div>
+                    <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1"
+                       class="lemonsqueezy-button btn btn-success btn-block glow-button"
+                       onclick="track('checkout_overlay_opened', {source: 'pricing_section'})">
+                        Unlock Founding Agency License <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <p class="pricing-guarantee"><i class="fa-solid fa-shield-halved"></i> Secure checkout powered by Lemon Squeezy</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHASE 9: Founder Trust -->
+        <section class="founder-section glass-panel" id="founder">
+            <div class="founder-copy">
+                <span class="section-kicker">The problem that forced GeoPage to exist</span>
+                <h2>I watched agencies burn hours on repetitive page production. There had to be a faster way.</h2>
+                <p>Every local SEO agency I knew was doing the same thing: copying the same service page template, pasting it into a new folder, renaming every suburb reference, rewriting meta titles one by one, and manually formatting HTML files for the client handoff.</p>
+                <p>A single 10-suburb campaign meant 10+ hours of repetitive work. Not strategy. Not optimization. Not client relationships. Just copy-paste-rename, over and over.</p>
+                <p>That is the work GeoPage AI eliminates. Not the strategic part — the factory part. The part that scales with volume instead of headcount.</p>
+                <p>The tool exists because fulfillment bottlenecks kill agency margins. Faster production does not mean lower quality. It means you can spend your time on work that actually grows revenue.</p>
+            </div>
+            <div class="founder-proof">
+                <strong>Fulfillment infrastructure, not an AI toy.</strong>
+                <span>Brief → Suburbs → Generate → Preview → Export → Client handoff</span>
+                <div class="founder-stats">
+                    <div class="founder-stat">
+                        <span class="stat-number">10 min</span>
+                        <span class="stat-label">to generate 10 suburb pages</span>
+                    </div>
+                    <div class="founder-stat">
+                        <span class="stat-number">Zero</span>
+                        <span class="stat-label">writer handoffs needed</span>
+                    </div>
+                    <div class="founder-stat">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">client-ready HTML output</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PHASE 12: Activity Signals -->
+        <section class="activity-section" id="activity">
+            <div class="section-copy">
+                <span class="section-kicker">Live platform activity</span>
+                <h2>Agencies Are Generating Pages Right Now</h2>
+            </div>
+            <div class="activity-feed" id="activityFeed">
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <span class="activity-action">Roofing project generated</span>
+                        <span class="activity-time">12 minutes ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <span class="activity-action">HVAC export completed</span>
+                        <span class="activity-time">28 minutes ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <span class="activity-action">Dental package generated</span>
+                        <span class="activity-time">1 hour ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <span class="activity-action">Plumbing campaign exported</span>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <span class="activity-action">Landscaping pages generated</span>
+                        <span class="activity-time">3 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section (Evidence) -->
+        <section class="testimonials-section" aria-label="Agency testimonials">
+            <div class="section-copy">
+                <span class="section-kicker">Agency proof</span>
+                <h2>Used by teams delivering local SEO at scale</h2>
+            </div>
+            <div class="testimonials-grid">
+                <article class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"We went from spending 3 hours per suburb page to generating 10 pages in under 15 minutes. The output is clean enough to hand directly to clients."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">MR</div>
+                        <div class="testimonial-info">
+                            <strong>Marcus R.</strong>
+                            <span>Local SEO Agency Owner</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"I manage 12 local service clients. Before GeoPage AI, suburb page expansion was a bottleneck. Now I generate a full service-area campaign in one sitting."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SL</div>
+                        <div class="testimonial-info">
+                            <strong>Sarah L.</strong>
+                            <span>Freelance SEO Consultant</span>
+                        </div>
+                    </div>
+                </article>
+                <article class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"The ZIP export is what sold me. I generate the pages, download the files, and send them to the client's developer. No CMS setup, no WordPress, no drama."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">JT</div>
+                        <div class="testimonial-info">
+                            <strong>James T.</strong>
+                            <span>Digital Marketing Agency</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- PHASE 10: Enhanced Dashboard with Metrics -->
+        <section class="dashboard-grid" id="dashboard">
+            <div class="glass-panel input-panel hover-card">
+                <div class="panel-header">
+                    <h2><span class="step-badge">1</span> Generate Deploy-Ready Pages</h2>
+                    <div class="dashboard-metrics" id="dashboardMetrics" style="display:none;">
+                        <span class="metric-chip" id="metricProjects"><i class="fa-solid fa-folder"></i> <span>0</span> projects</span>
+                        <span class="metric-chip" id="metricPages"><i class="fa-solid fa-file"></i> <span>0</span> pages</span>
+                        <span class="metric-chip" id="metricExports"><i class="fa-solid fa-download"></i> <span>0</span> exports</span>
+                    </div>
+                </div>
+                
+                <div class="wizard-steps">
+                    <div class="step-content active" id="step-1">
+                        <div class="form-group">
+                            <label for="businessName">Business Name</label>
+                            <input type="text" id="businessName" placeholder="e.g. Apex Plumbing Solutions" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessService">Primary Service Offered</label>
+                            <input type="text" id="businessService" placeholder="e.g. Emergency Plumbing & Leak Repair" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactPhone">Contact Phone Number</label>
+                            <input type="text" id="contactPhone" placeholder="e.g. (555) 123-4567" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail">Contact Email Address</label>
+                            <input type="email" id="contactEmail" placeholder="e.g. info@apexplumbing.com" required>
+                        </div>
+                        <button class="btn btn-primary btn-next glow-button" onclick="nextStep(2)">Next: Service Areas <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="step-content" id="step-2">
+                        <div class="form-group">
+                            <label for="baseCity">Base/Parent City</label>
+                            <input type="text" id="baseCity" placeholder="e.g. Houston" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="suburbs">Target Suburbs / Service Areas (Comma Separated)</label>
+                            <textarea id="suburbs" rows="4" placeholder="e.g. Sugar Land, Katy, The Woodlands, Pearland, Cypress" required></textarea>
+                            <span class="input-hint">Tip: Paste a comma-separated list of suburbs. Free tier generates 3 pages.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="localContext">Local Context & Landmarks (Optional)</label>
+                            <textarea id="localContext" rows="2" placeholder="e.g. Near Memorial Park, servicing the I-45 corridor"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Page Style</label>
+                            <div class="style-selector" id="styleSelector">
+                                <div class="style-card active" data-style="trust" onclick="selectPageStyle('trust')">
+                                    <i class="fa-solid fa-handshake"></i>
+                                    <span class="style-name">Local Trust</span>
+                                    <span class="style-desc">Warm, community-rooted</span>
+                                </div>
+                                <div class="style-card" data-style="premium" onclick="selectPageStyle('premium')">
+                                    <i class="fa-solid fa-gem"></i>
+                                    <span class="style-name">Premium</span>
+                                    <span class="style-desc">Polished, high-end</span>
+                                </div>
+                                <div class="style-card" data-style="emergency" onclick="selectPageStyle('emergency')">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    <span class="style-name">Emergency</span>
+                                    <span class="style-desc">Urgent, conversion-focused</span>
+                                </div>
+                                <div class="style-card" data-style="community" onclick="selectPageStyle('community')">
+                                    <i class="fa-solid fa-people-roof"></i>
+                                    <span class="style-name">Community</span>
+                                    <span class="style-desc">Friendly, local feel</span>
+                                </div>
+                                <div class="style-card" data-style="minimal" onclick="selectPageStyle('minimal')">
+                                    <i class="fa-solid fa-minus"></i>
+                                    <span class="style-name">Minimal</span>
+                                    <span class="style-desc">Clean, modern</span>
+                                </div>
+                                <div class="style-card" data-style="commercial" onclick="selectPageStyle('commercial')">
+                                    <i class="fa-solid fa-building"></i>
+                                    <span class="style-name">Commercial</span>
+                                    <span class="style-desc">B2B, operational</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="button-row">
+                            <button class="btn btn-secondary" onclick="nextStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                            <button class="btn btn-success glow-button" id="generateBtn" onclick="runGeneration()">Generate Pages <i class="fa-solid fa-wand-magic-sparkles"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel preview-panel hover-card">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-laptop-code"></i> <span id="previewTitle">Live Preview</span></h2>
+                    <div class="preview-tabs" id="previewTabs">
+                        <span class="tab active">Live Preview</span>
+                    </div>
+                </div>
+                <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Free preview includes watermark. <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1" class="lemonsqueezy-button" onclick="track('checkout_overlay_opened', {source: 'upgrade_banner'})">Upgrade</a> for clean exports.</span>
+                </div>
+                
+                <div class="preview-browser">
+                    <div class="browser-bar">
+                        <div class="browser-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <div class="browser-url" id="browserUrl">https://apexplumbing.com/sugar-land</div>
+                    </div>
+                    <div class="browser-viewport" id="previewViewport">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visual Proof Section (Phase 2: Claim → Proof) -->
         <section class="proof-visual-section" aria-label="Generated output proof">
             <div class="section-copy">
                 <span class="section-kicker">What you actually get</span>
                 <h2>Real outputs. Real filenames. Real workflow.</h2>
-                <p>Every generation produces deploy-ready HTML files with unique content, SEO metadata, and structured sections. Here is what the output looks like in practice.</p>
+                <p>Every generation produces deploy-ready HTML files with unique content, SEO metadata, and structured sections.</p>
             </div>
             <div class="proof-visual-grid">
                 <div class="proof-visual-card">
@@ -288,254 +751,21 @@
             </div>
         </section>
 
-        <!-- Testimonials Section -->
-        <section class="testimonials-section" aria-label="Agency testimonials">
-            <div class="section-copy">
-                <span class="section-kicker">Early users</span>
-                <h2>Agencies already using GeoPage AI</h2>
-            </div>
-            <div class="testimonials-grid">
-                <article class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"We went from spending 3 hours per suburb page to generating 10 pages in under 15 minutes. The output is clean enough to hand directly to clients."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">MR</div>
-                        <div class="testimonial-info">
-                            <strong>Marcus R.</strong>
-                            <span>Local SEO Agency Owner</span>
-                        </div>
-                    </div>
-                </article>
-                <article class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"I manage 12 local service clients. Before GeoPage AI, suburb page expansion was a bottleneck. Now I generate a full service-area campaign in one sitting."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">SL</div>
-                        <div class="testimonial-info">
-                            <strong>Sarah L.</strong>
-                            <span>Freelance SEO Consultant</span>
-                        </div>
-                    </div>
-                </article>
-                <article class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"The ZIP export is what sold me. I generate the pages, download the files, and send them to the client's developer. No CMS setup, no WordPress, no drama."</p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">JT</div>
-                        <div class="testimonial-info">
-                            <strong>James T.</strong>
-                            <span>Digital Marketing Agency</span>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <!-- Main Dashboard Interface -->
-        <section class="dashboard-grid">
-            <!-- Left Panel: Input Wizard -->
-            <div class="glass-panel input-panel hover-card">
-                <div class="panel-header">
-                    <h2><span class="step-badge">1</span> Generate Deploy-Ready Pages</h2>
-                </div>
-                
-                <div class="wizard-steps">
-                    <!-- Step 1: Business Details -->
-                    <div class="step-content active" id="step-1">
-                        <div class="form-group">
-                            <label for="businessName">Business Name</label>
-                            <input type="text" id="businessName" placeholder="e.g. Apex Plumbing Solutions" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="businessService">Primary Service Offered</label>
-                            <input type="text" id="businessService" placeholder="e.g. Emergency Plumbing & Leak Repair" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contactPhone">Contact Phone Number</label>
-                            <input type="text" id="contactPhone" placeholder="e.g. (555) 123-4567" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contactEmail">Contact Email Address</label>
-                            <input type="email" id="contactEmail" placeholder="e.g. info@apexplumbing.com" required>
-                        </div>
-                        <button class="btn btn-primary btn-next glow-button" onclick="nextStep(2)">Next: Service Areas <i class="fa-solid fa-arrow-right"></i></button>
-                    </div>
-
-                    <!-- Step 2: Target Locations -->
-                    <div class="step-content" id="step-2">
-                        <div class="form-group">
-                            <label for="baseCity">Base/Parent City</label>
-                            <input type="text" id="baseCity" placeholder="e.g. Houston" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="suburbs">Target Suburbs / Service Areas (Comma Separated)</label>
-                            <textarea id="suburbs" rows="4" placeholder="e.g. Sugar Land, Katy, The Woodlands, Pearland, Cypress" required></textarea>
-                            <span class="input-hint">Tip: Paste a comma-separated list of suburbs from Wikipedia. Free tier generates 3 pages.</span>
-                        </div>
-                        <div class="form-group">
-                            <label for="localContext">Local Context & Landmarks (Optional)</label>
-                            <textarea id="localContext" rows="2" placeholder="e.g. Near Memorial Park, servicing the I-45 corridor"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Page Style</label>
-                            <div class="style-selector" id="styleSelector">
-                                <div class="style-card active" data-style="trust" onclick="selectPageStyle('trust')">
-                                    <i class="fa-solid fa-handshake"></i>
-                                    <span class="style-name">Local Trust</span>
-                                    <span class="style-desc">Warm, community-rooted</span>
-                                </div>
-                                <div class="style-card" data-style="premium" onclick="selectPageStyle('premium')">
-                                    <i class="fa-solid fa-gem"></i>
-                                    <span class="style-name">Premium</span>
-                                    <span class="style-desc">Polished, high-end</span>
-                                </div>
-                                <div class="style-card" data-style="emergency" onclick="selectPageStyle('emergency')">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    <span class="style-name">Emergency</span>
-                                    <span class="style-desc">Urgent, conversion-focused</span>
-                                </div>
-                                <div class="style-card" data-style="community" onclick="selectPageStyle('community')">
-                                    <i class="fa-solid fa-people-roof"></i>
-                                    <span class="style-name">Community</span>
-                                    <span class="style-desc">Friendly, local feel</span>
-                                </div>
-                                <div class="style-card" data-style="minimal" onclick="selectPageStyle('minimal')">
-                                    <i class="fa-solid fa-minus"></i>
-                                    <span class="style-name">Minimal</span>
-                                    <span class="style-desc">Clean, modern</span>
-                                </div>
-                                <div class="style-card" data-style="commercial" onclick="selectPageStyle('commercial')">
-                                    <i class="fa-solid fa-building"></i>
-                                    <span class="style-name">Commercial</span>
-                                    <span class="style-desc">B2B, operational</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="button-row">
-                            <button class="btn btn-secondary" onclick="nextStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                            <button class="btn btn-success glow-button" id="generateBtn" onclick="runGeneration()">Generate Pages <i class="fa-solid fa-wand-magic-sparkles"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Panel: Live Preview -->
-            <div class="glass-panel preview-panel hover-card">
-                <div class="panel-header">
-                    <h2><i class="fa-solid fa-laptop-code"></i> <span id="previewTitle">Live Preview</span></h2>
-                    <div class="preview-tabs" id="previewTabs">
-                        <span class="tab active">Live Preview</span>
-                    </div>
-                </div>
-                <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
-                    <i class="fa-solid fa-lock"></i>
-                    <span>Free preview includes watermark. <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1" class="lemonsqueezy-button" onclick="track('checkout_overlay_opened', {source: 'upgrade_banner'})">Upgrade</a> for clean exports.</span>
-                </div>
-                
-                <div class="preview-browser">
-                    <div class="browser-bar">
-                        <div class="browser-dots">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
-                        </div>
-                        <div class="browser-url" id="browserUrl">https://apexplumbing.com/sugar-land</div>
-                    </div>
-                    <div class="browser-viewport" id="previewViewport">
-                        <!-- Populated by live preview system on page load -->
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="conversion-section" aria-label="Agency use cases">
-            <div class="section-copy">
-                <span class="section-kicker">Operational leverage</span>
-                <h2>Scale local SEO fulfillment without scaling headcount.</h2>
-                <p>GeoPage AI is built for agencies that need to produce many service-area pages fast. One input, multiple unique outputs, deploy-ready files. The kind of workflow that makes a solo operator feel like a full production team.</p>
-            </div>
-            <div class="use-case-list">
-                <div><i class="fa-solid fa-building"></i><span>Launch city + suburb campaigns for local service clients</span></div>
-                <div><i class="fa-solid fa-clock"></i><span>Turn repetitive page builds into a repeatable 10-minute workflow</span></div>
-                <div><i class="fa-solid fa-hand-holding-dollar"></i><span>Package suburb pages as a paid upsell or audit follow-up deliverable</span></div>
-            </div>
-        </section>
-
-        <section class="founder-section glass-panel" id="founder">
-            <div class="founder-copy">
-                <span class="section-kicker">Why this exists</span>
-                <h2>I built GeoPage AI for the boring, profitable work agencies actually sell.</h2>
-                <p>Local SEO teams do not need another blank AI writer. They need a repeatable way to turn one client brief into suburb pages that look like deliverables: metadata, local angles, previewable pages, and files a client or developer can use.</p>
-                <p>After watching agencies spend hours copy-pasting suburb names into the same template, rewriting meta titles manually, and hand-formatting HTML for each service area, I knew there had to be a faster way that did not sacrifice quality.</p>
-                <p>GeoPage AI does the repetitive first draft work so your team can focus on strategy, link building, and client relationships. The tool handles the boring production. You handle the parts that actually grow revenue.</p>
-            </div>
-            <div class="founder-proof">
-                <strong>The workflow is simple on purpose.</strong>
-                <span>Brief -> Suburbs -> Preview -> ZIP -> Client handoff</span>
-                <div class="founder-stats">
-                    <div class="founder-stat">
-                        <span class="stat-number">10 min</span>
-                        <span class="stat-label">to generate 10 suburb pages</span>
-                    </div>
-                    <div class="founder-stat">
-                        <span class="stat-number">Zero</span>
-                        <span class="stat-label">writer handoffs needed</span>
-                    </div>
-                    <div class="founder-stat">
-                        <span class="stat-number">100%</span>
-                        <span class="stat-label">client-ready HTML output</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="deal-section glass-panel" id="pricing">
-            <div>
-                <span class="section-kicker">Early lifetime deal</span>
-                <h2>Test 3 pages free. Buy unlimited when it scales your agency workflow.</h2>
-                <p>The lifetime plan is for operators who need repeatable suburb-page production, commercial use rights, and ZIP exports without per-campaign pricing.</p>
-            </div>
-            <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1"
-               class="lemonsqueezy-button btn btn-primary glow-button"
-               onclick="track('checkout_overlay_opened', {source: 'deal_section'})">
-                Unlock Lifetime Access <i class="fa-solid fa-arrow-right"></i>
-            </a>
-        </section>
-
+        <!-- Launch Hook (CTA) -->
         <section class="launch-hook">
             <div>
                 <span class="section-kicker">Start now</span>
-                <h2>Launch suburb pages in minutes, not days.</h2>
-                <p>Generate 3 deploy-ready pages with no commitment. Preview the output, inspect the HTML, and see if it fits your fulfillment workflow.</p>
+                <h2>Test your first 3 pages free. No commitment.</h2>
+                <p>Generate deploy-ready suburb pages, preview the output, inspect the HTML, and see if it fits your fulfillment workflow before you buy.</p>
             </div>
-            <button class="btn btn-success glow-button" onclick="scrollToGenerator()">Generate Deploy-Ready Pages <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="btn btn-success glow-button" onclick="scrollToGenerator()">Generate Client-Ready Pages <i class="fa-solid fa-arrow-right"></i></button>
         </section>
 
-        <section class="email-capture-section glass-panel" id="updates">
-            <div class="email-capture-content">
-                <span class="section-kicker">Stay updated</span>
-                <h2>Get launch updates + free SEO page examples</h2>
-                <p>Be first to know when new features drop. We send practical agency workflows, not spam.</p>
-            </div>
-            <form class="email-capture-form" onsubmit="handleEmailCapture(event)">
-                <div class="email-capture-input-group">
-                    <input type="email" id="captureEmail" placeholder="you@agency.com" required>
-                    <button type="submit" class="btn btn-success">Get Updates <i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-                <span class="email-capture-hint">No spam. Unsubscribe anytime. Used only for launch updates.</span>
-            </form>
-        </section>
-
+        <!-- FAQ -->
         <section class="faq-section" id="faq">
             <div class="section-copy">
                 <span class="section-kicker">Fast answers</span>
-                <h2>Common launch questions</h2>
+                <h2>Agency questions, answered directly</h2>
             </div>
             <div class="faq-grid">
                 <article>
@@ -547,7 +777,7 @@
                     <p>Yes. The workflow is built for repeatable local SEO campaigns where you need many service-area pages quickly.</p>
                 </article>
                 <article>
-                    <h3>Does it replace strategy?</h3>
+                    <h3>Does it replace SEO strategy?</h3>
                     <p>No. It speeds up production. You still choose the service, suburbs, offer, and local context that make pages useful.</p>
                 </article>
                 <article>
@@ -556,7 +786,7 @@
                 </article>
                 <article>
                     <h3>Can I use this for client work?</h3>
-                    <p>Yes. The offer is framed for commercial agency use, especially repeatable local SEO and service-area campaigns.</p>
+                    <p>Yes. Commercial usage rights are included. Sell the pages, use them for fulfillment, run lead gen sites — no restrictions.</p>
                 </article>
                 <article>
                     <h3>Why not just use a generic AI writer?</h3>
@@ -564,9 +794,26 @@
                 </article>
             </div>
         </section>
+
+        <!-- Email Capture -->
+        <section class="email-capture-section glass-panel" id="updates">
+            <div class="email-capture-content">
+                <span class="section-kicker">Stay updated</span>
+                <h2>Get launch updates + free SEO page examples</h2>
+                <p>We send practical agency workflows, not spam.</p>
+            </div>
+            <form class="email-capture-form" onsubmit="handleEmailCapture(event)">
+                <div class="email-capture-input-group">
+                    <input type="email" id="captureEmail" placeholder="you@agency.com" required>
+                    <button type="submit" class="btn btn-success">Get Updates <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <span class="email-capture-hint">No spam. Unsubscribe anytime.</span>
+            </form>
+        </section>
+
     </main>
 
-    <!-- Interactive Auth Modal (Sign In / Sign Up) -->
+    <!-- Auth Modal -->
     <div class="modal-overlay" id="authModal">
         <div class="modal-card auth-card glass-panel">
             <button class="close-modal" onclick="closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -583,7 +830,6 @@
                 <button class="auth-tab" id="tab-signup-btn" onclick="toggleAuthTab('signup')">Sign Up</button>
             </div>
             
-            <!-- Login Form -->
             <form id="login-form" class="auth-form active" onsubmit="handleAuthSubmit(event, 'login')">
                 <div class="form-group">
                     <label for="login-email">Email Address</label>
@@ -597,7 +843,6 @@
                 <p class="auth-footer-text">Don't have an account? <a href="#" onclick="toggleAuthTab('signup');return false;">Sign up free</a></p>
             </form>
 
-            <!-- Sign Up Form -->
             <form id="signup-form" class="auth-form" onsubmit="handleAuthSubmit(event, 'signup')">
                 <div class="form-group">
                     <label for="signup-name">Full Name</label>
@@ -617,7 +862,7 @@
         </div>
     </div>
 
-    <!-- Contact Us Modal -->
+    <!-- Contact Modal -->
     <div class="modal-overlay" id="contactModal">
         <div class="modal-card glass-panel">
             <button class="close-modal" onclick="closeContactModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -649,7 +894,7 @@
         <div class="modal-card upgrade-modal glass-panel">
             <button class="close-modal" onclick="closePaywall()"><i class="fa-solid fa-xmark"></i></button>
             <div class="upgrade-modal-header">
-                <span class="pricing-badge">LIFETIME ACCESS</span>
+                <span class="pricing-badge">FOUNDING AGENCY LICENSE</span>
                 <h3>Unlock Unlimited Suburb Pages</h3>
                 <p class="upgrade-subtitle">Scale your local SEO fulfillment without per-campaign pricing.</p>
             </div>
@@ -666,7 +911,7 @@
                     </ul>
                 </div>
                 <div class="upgrade-tier upgrade-tier-paid">
-                    <div class="tier-label tier-label-highlight">Lifetime</div>
+                    <div class="tier-label tier-label-highlight">Founding License</div>
                     <div class="tier-price"><span class="currency">$</span>49</div>
                     <div class="tier-period">one-time, no subscription</div>
                     <ul class="tier-features">
@@ -679,7 +924,7 @@
                     <a href="https://geopageai.lemonsqueezy.com/checkout/buy/134a5fa5-ce6b-4b73-913f-ac1220782066?embed=1"
                        class="lemonsqueezy-button btn btn-success btn-block glow-button upgrade-cta"
                        onclick="track('checkout_overlay_opened')">
-                        Unlock Lifetime Access <i class="fa-solid fa-arrow-right"></i>
+                        Unlock Founding License <i class="fa-solid fa-arrow-right"></i>
                     </a>
                 </div>
             </div>
@@ -692,7 +937,7 @@
         <div class="loader-card">
             <div class="spinner"></div>
             <h3>Generating SEO Pages...</h3>
-            <p>Llama 3.3 is writing localized copy to avoid duplicate content penalties.</p>
+            <p>Writing localized copy to avoid duplicate content penalties.</p>
             <div class="progress-bar-container">
                 <div class="progress-bar" id="progressBar"></div>
             </div>
@@ -709,7 +954,7 @@
     </div>
 
     <button class="mobile-sticky-cta glow-button" onclick="scrollToGenerator()">
-        Generate Deploy-Ready Pages <i class="fa-solid fa-arrow-right"></i>
+        Generate Client-Ready Pages <i class="fa-solid fa-arrow-right"></i>
     </button>
 
     <script src="app.js"></script>

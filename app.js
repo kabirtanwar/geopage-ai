@@ -29,6 +29,140 @@ let currentUser = null;
 let selectedPageStyle = 'trust';
 
 // =============================================
+// DASHBOARD METRICS (Phase 10)
+// =============================================
+let dashboardMetrics = {
+    projects: 0,
+    pages: 0,
+    exports: 0
+};
+
+function loadDashboardMetrics() {
+    if (!currentUser) {
+        const stored = localStorage.getItem('geopage_metrics');
+        if (stored) {
+            try { dashboardMetrics = JSON.parse(stored); } catch(e) {}
+        }
+        return;
+    }
+    db.from('user_usage')
+        .select('generation_count, export_count, project_count')
+        .eq('email', currentUser.email)
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+            if (data) {
+                dashboardMetrics.projects = data.project_count || 0;
+                dashboardMetrics.pages = data.generation_count || 0;
+                dashboardMetrics.exports = data.export_count || 0;
+            }
+            updateDashboardMetricsUI();
+        })
+        .catch(() => {});
+}
+
+function updateDashboardMetricsUI() {
+    const metricsEl = document.getElementById('dashboardMetrics');
+    if (!metricsEl) return;
+    if (currentUser) {
+        metricsEl.style.display = 'flex';
+        const projEl = document.getElementById('metricProjects');
+        const pageEl = document.getElementById('metricPages');
+        const expEl = document.getElementById('metricExports');
+        if (projEl) projEl.querySelector('span').textContent = dashboardMetrics.projects;
+        if (pageEl) pageEl.querySelector('span').textContent = dashboardMetrics.pages;
+        if (expEl) expEl.querySelector('span').textContent = dashboardMetrics.exports;
+    } else {
+        metricsEl.style.display = 'none';
+    }
+}
+
+async function incrementDashboardMetric(field) {
+    if (!currentUser) {
+        if (field === 'pages') dashboardMetrics.pages++;
+        if (field === 'exports') dashboardMetrics.exports++;
+        if (field === 'projects') dashboardMetrics.projects++;
+        localStorage.setItem('geopage_metrics', JSON.stringify(dashboardMetrics));
+        updateDashboardMetricsUI();
+        return;
+    }
+    try {
+        const { data } = await db
+            .from('user_usage')
+            .select('*')
+            .eq('email', currentUser.email)
+            .limit(1)
+            .maybeSingle();
+        const updates = {};
+        if (field === 'pages') updates.generation_count = (data?.generation_count || 0) + 1;
+        if (field === 'exports') updates.export_count = (data?.export_count || 0) + 1;
+        if (field === 'projects') updates.project_count = (data?.project_count || 0) + 1;
+        updates.updated_at = new Date().toISOString();
+        if (data) {
+            await db.from('user_usage').update(updates).eq('email', currentUser.email);
+        } else {
+            await db.from('user_usage').insert({
+                email: currentUser.email,
+                user_id: currentUser.id,
+                generation_count: field === 'pages' ? 1 : 0,
+                export_count: field === 'exports' ? 1 : 0,
+                project_count: field === 'projects' ? 1 : 0
+            });
+        }
+        if (field === 'pages') dashboardMetrics.pages++;
+        if (field === 'exports') dashboardMetrics.exports++;
+        if (field === 'projects') dashboardMetrics.projects++;
+        updateDashboardMetricsUI();
+    } catch(e) {
+        if (field === 'pages') dashboardMetrics.pages++;
+        if (field === 'exports') dashboardMetrics.exports++;
+        if (field === 'projects') dashboardMetrics.projects++;
+        updateDashboardMetricsUI();
+    }
+}
+
+// =============================================
+// ACTIVITY SIGNALS (Phase 12)
+// =============================================
+const activityItems = [
+    { action: 'Roofing project generated', time: '12 minutes ago' },
+    { action: 'HVAC export completed', time: '28 minutes ago' },
+    { action: 'Dental package generated', time: '1 hour ago' },
+    { action: 'Plumbing campaign exported', time: '2 hours ago' },
+    { action: 'Landscaping pages generated', time: '3 hours ago' },
+    { action: 'Electrical service pages created', time: '4 hours ago' },
+    { action: 'Pest control campaign generated', time: '5 hours ago' },
+    { action: 'Moving company pages exported', time: '6 hours ago' }
+];
+
+let activityIndex = 0;
+
+function rotateActivitySignals() {
+    const feed = document.getElementById('activityFeed');
+    if (!feed) return;
+    const items = feed.querySelectorAll('.activity-item');
+    if (items.length < 5) return;
+    
+    activityIndex = (activityIndex + 1) % activityItems.length;
+    const rotations = [0, 1, 2, 3, 4].map(i => {
+        const idx = (activityIndex + i) % activityItems.length;
+        return activityItems[idx];
+    });
+    
+    items.forEach((item, i) => {
+        if (rotations[i]) {
+            const actionEl = item.querySelector('.activity-action');
+            const timeEl = item.querySelector('.activity-time');
+            if (actionEl) actionEl.textContent = rotations[i].action;
+            if (timeEl) timeEl.textContent = rotations[i].time;
+            item.style.animation = 'none';
+            item.offsetHeight;
+            item.style.animation = 'fadeIn 0.5s ease forwards';
+        }
+    });
+}
+
+// =============================================
 // POSTHOG ANALYTICS HELPERS
 // =============================================
 function track(event, props = {}) {
@@ -84,6 +218,7 @@ async function onAuthSuccess(user) {
 
     // Get generation count from server
     await refreshGenerationCount();
+    loadDashboardMetrics();
     updateFreeTierUI();
 }
 
@@ -261,6 +396,10 @@ window.addEventListener('load', async () => {
     // Initialize Live Reactive Preview IMMEDIATELY
     initLivePreview();
     updateFreeTierUI();
+    loadDashboardMetrics();
+
+    // Rotate activity signals every 30 seconds
+    setInterval(rotateActivitySignals, 30000);
 
     // Show upgrade banner for free users
     const upgradeBanner = document.getElementById('upgradeBanner');
@@ -779,8 +918,10 @@ async function runGeneration() {
         setupTabs(suburbs);
         renderLivePreview(suburbs[0]);
 
-        // Track generation count
+        // Track generation count and dashboard metrics
         await incrementGenerationCount();
+        await incrementDashboardMetric('pages');
+        await incrementDashboardMetric('projects');
         updateFreeTierUI();
 
         track('generation_completed', { suburb_count: suburbs.length, is_pro: isProUser });
@@ -823,6 +964,7 @@ function triggerZipDownload(name, service, phone, email, baseCity) {
         toast.classList.add('active');
         setTimeout(() => toast.classList.remove('active'), 4000);
 
+        incrementDashboardMetric('exports');
         track('zip_downloaded', { file_count: Object.keys(generatedPagesData).length, is_pro: isProUser });
     });
 }

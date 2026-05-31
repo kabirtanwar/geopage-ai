@@ -2395,6 +2395,825 @@ div[class*="lemon"] {
     font-size: 0.9rem;
 }
 
+/* =============================================
+   PHASE 7: Agency Economics Section
+   ============================================= */
+.economics-section {
+    margin-bottom: 34px;
+}
+
+.economics-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin-top: 20px;
+}
+
+.economics-card {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.economics-card-before {
+    border-color: rgba(239, 68, 68, 0.2);
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.06), rgba(255, 255, 255, 0.03));
+}
+
+.economics-card-after {
+    border-color: rgba(16, 185, 129, 0.2);
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.06), rgba(99, 102, 241, 0.04));
+}
+
+.economics-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    width: fit-content;
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.economics-label-after {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--accent-success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.economics-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 0;
+}
+
+.economics-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 10px 20px;
+    width: 100%;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.economics-step .step-icon {
+    color: var(--accent-primary);
+    font-size: 1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.economics-card-after .economics-step .step-icon {
+    color: var(--accent-success);
+}
+
+.economics-arrow {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+.economics-metric {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: center;
+}
+
+.economics-metric-highlight {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.1), rgba(99, 102, 241, 0.06));
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.metric-time {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.economics-metric-highlight .metric-time {
+    color: var(--accent-success);
+}
+
+.economics-cost {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 14px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+}
+
+.economics-cost-highlight {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.15), rgba(99, 102, 241, 0.08));
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.cost-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.cost-amount {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.economics-cost-highlight .cost-amount {
+    color: var(--accent-success);
+}
+
+.economics-vs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+}
+
+.economics-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.economics-stat {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-value {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+    line-height: 1;
+}
+
+.stat-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* =============================================
+   PHASE 3: Enhanced Showcase Section
+   ============================================= */
+.showcase-section {
+    margin-bottom: 34px;
+}
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.showcase-card {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+}
+
+.showcase-card:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.3);
+}
+
+.showcase-tag {
+    align-self: flex-start;
+    border: 1px solid rgba(16, 185, 129, 0.24);
+    border-radius: 999px;
+    color: var(--accent-success);
+    background: rgba(16, 185, 129, 0.08);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.showcase-meta {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.showcase-meta-title,
+.showcase-meta-h1 {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-weight: 600;
+    font-family: monospace;
+    line-height: 1.3;
+}
+
+.showcase-meta-h1 {
+    color: var(--accent-primary);
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.showcase-intro {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    flex: 1;
+    margin-bottom: 12px;
+}
+
+.showcase-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.showcase-details span {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.showcase-details span i {
+    color: var(--accent-success);
+    font-size: 0.65rem;
+}
+
+.showcase-cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    transition: gap 0.2s ease;
+    margin-top: auto;
+}
+
+.showcase-card:hover .showcase-cta-link {
+    gap: 10px;
+}
+
+/* =============================================
+   PHASE 4: Variation Lab Section
+   ============================================= */
+.variation-section {
+    margin-bottom: 34px;
+}
+
+.variation-demo {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 28px;
+}
+
+.variation-input {
+    margin-bottom: 24px;
+}
+
+.variation-input-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--accent-success);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.variation-input-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.variation-input-card div {
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.variation-input-card strong {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.variation-outputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.variation-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.variation-card-header {
+    border-left: 4px solid var(--accent-primary);
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--panel-border);
+}
+
+.variation-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.variation-style {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.variation-content {
+    padding: 14px 16px;
+    display: grid;
+    gap: 10px;
+}
+
+.variation-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-name {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.field-value {
+    font-size: 0.82rem;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+/* =============================================
+   PHASE 6: Boundaries / Credibility Section
+   ============================================= */
+.boundaries-section {
+    margin-bottom: 34px;
+}
+
+.boundaries-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: stretch;
+}
+
+.boundaries-does-not,
+.boundaries-does {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 28px;
+}
+
+.boundaries-does-not {
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.boundaries-does {
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.boundaries-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.boundaries-header i {
+    font-size: 1.5rem;
+}
+
+.boundaries-does-not .boundaries-header i {
+    color: #ef4444;
+}
+
+.boundaries-does .boundaries-header i {
+    color: var(--accent-success);
+}
+
+.boundaries-header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.text-red {
+    color: #ef4444;
+}
+
+.text-green {
+    color: var(--accent-success);
+}
+
+.boundaries-list {
+    list-style: none;
+    display: grid;
+    gap: 12px;
+}
+
+.boundaries-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.boundaries-list-not li i {
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+.boundaries-list-does li i {
+    color: var(--accent-success);
+    font-size: 0.85rem;
+}
+
+.boundaries-divider {
+    width: 2px;
+    background: linear-gradient(180deg, transparent, var(--panel-border), transparent);
+    margin: 0 20px;
+}
+
+/* =============================================
+   PHASE 5: Commercial Rights Section
+   ============================================= */
+.rights-section {
+    padding: 32px 34px;
+    margin-bottom: 34px;
+}
+
+.rights-content {
+    margin-bottom: 20px;
+}
+
+.rights-content h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    line-height: 1.12;
+    margin: 10px 0 8px;
+}
+
+.rights-content p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 680px;
+}
+
+.rights-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.rights-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-main);
+}
+
+.rights-item i {
+    color: var(--accent-success);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* =============================================
+   PHASE 8: Refactored Pricing Section
+   ============================================= */
+.pricing-section {
+    padding: 32px 34px;
+    margin-bottom: 34px;
+}
+
+.pricing-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.pricing-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    line-height: 1.12;
+    margin: 12px 0 8px;
+}
+
+.pricing-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.pricing-card-highlight {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.06), rgba(99, 102, 241, 0.04));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 20px;
+    padding: 32px;
+}
+
+.pricing-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pricing-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-success);
+    margin-bottom: 4px;
+}
+
+.pricing-amount {
+    font-family: var(--font-heading);
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1;
+}
+
+.pricing-amount .currency {
+    font-size: 1.5rem;
+    font-weight: 600;
+    vertical-align: top;
+    margin-right: 2px;
+}
+
+.pricing-period {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.pricing-features-list {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+}
+
+.pricing-features-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.pricing-features-list li i {
+    color: var(--accent-success);
+    font-size: 0.85rem;
+}
+
+.pricing-card-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pricing-value-prop {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 18px;
+}
+
+.pricing-value-prop strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.pricing-value-prop p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.pricing-compare {
+    display: grid;
+    gap: 8px;
+}
+
+.pricing-compare-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+}
+
+.compare-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.compare-value {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.compare-value-highlight {
+    color: var(--accent-success);
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+}
+
+.pricing-compare-divider {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: rgba(16, 185, 129, 0.06);
+}
+
+.pricing-guarantee {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.pricing-guarantee i {
+    color: var(--accent-success);
+}
+
+/* =============================================
+   PHASE 12: Activity Signals Section
+   ============================================= */
+.activity-section {
+    margin-bottom: 34px;
+}
+
+.activity-feed {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--panel-border);
+    border-radius: 18px;
+    padding: 20px;
+    display: grid;
+    gap: 4px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    flex-shrink: 0;
+    animation: livePulse 2s infinite ease-in-out;
+}
+
+.activity-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+}
+
+.activity-action {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.activity-time {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* =============================================
+   PHASE 10: Dashboard Metrics Chips
+   ============================================= */
+.dashboard-metrics {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.metric-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.metric-chip i {
+    color: var(--accent-success);
+    font-size: 0.65rem;
+}
+
+.metric-chip span {
+    color: var(--text-main);
+}
+
 /* Keyframes Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -2843,6 +3662,44 @@ div[class*="lemon"] {
         font-weight: 800;
     }
 
+    .economics-grid,
+    .boundaries-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .economics-vs {
+        flex-direction: row;
+        padding: 8px 0;
+    }
+    .economics-summary,
+    .rights-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .showcase-grid,
+    .variation-outputs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pricing-card-highlight {
+        grid-template-columns: 1fr;
+    }
+    .boundaries-divider {
+        width: auto;
+        height: 2px;
+        margin: 0;
+        background: linear-gradient(90deg, transparent, var(--panel-border), transparent);
+    }
+    .variation-input-card {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .economics-section,
+    .showcase-section,
+    .variation-section,
+    .boundaries-section,
+    .rights-section,
+    .pricing-section,
+    .activity-section,
     .comparison-section,
     .demo-pages-section,
     .conversion-section,
@@ -2885,6 +3742,17 @@ div[class*="lemon"] {
         padding: 20px;
     }
 
+    .variation-outputs,
+    .rights-grid,
+    .economics-summary {
+        grid-template-columns: 1fr;
+    }
+    .economics-stat {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+    }
     .founder-stats {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -2909,7 +3777,8 @@ div[class*="lemon"] {
         font-size: 1.3rem;
     }
 
-    .demo-page-grid {
+    .demo-page-grid,
+    .showcase-grid {
         grid-template-columns: 1fr;
         gap: 12px;
     }
