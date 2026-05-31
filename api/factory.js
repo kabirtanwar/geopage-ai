@@ -35,19 +35,21 @@ module.exports = async (req, res) => {
                 item.style
             );
 
+            let db_saved = false;
             try {
-                await dbInsert('showcase_assets', {
+                const result = await dbInsert('showcase_assets', {
                     niche: item.niche,
                     suburb: item.suburb.split(',')[0],
                     style: item.style,
                     status: 'ready',
                     business_name: item.business_name,
                     service: item.service,
-                    content_json: JSON.stringify(content),
+                    content_json: content,
                     file_path: getShowcaseRefPath(item.niche, item.suburb, item.style),
                     created_at: new Date().toISOString()
                 });
-            } catch (_) {}
+                db_saved = !!result;
+            } catch (e) { db_saved = false; }
 
             results.push({
                 niche: item.niche,
@@ -55,7 +57,8 @@ module.exports = async (req, res) => {
                 style: item.style,
                 status: 'ready',
                 headline: content.headline,
-                content: content
+                content: content,
+                db_saved: db_saved
             });
         } catch (err) {
             results.push({
