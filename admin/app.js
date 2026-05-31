@@ -259,6 +259,17 @@ document.getElementById('sendOutreach').addEventListener('click', async () => {
     logAction(`Generated ${result.count || 0} messages. Emails will be sent on next cron run.`);
 });
 
+document.getElementById('generateShowcases').addEventListener('click', async () => {
+    logAction('Generating showcase batch...');
+    try {
+        const result = await fetch('/api/factory', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(r => r.json());
+        logAction(`Generated ${result.success || 0} showcases (${result.failed || 0} failed). Batch ${result.batch_size || 0}/${result.total || 0}`);
+        loadShowcases();
+    } catch (err) {
+        logAction(`Showcase generation error: ${err.message}`);
+    }
+});
+
 document.getElementById('runAnalytics').addEventListener('click', async () => {
     logAction('Running analytics...');
     await apiGet('metrics');

@@ -334,6 +334,28 @@ FAQs to improve: ${JSON.stringify(faqs)}`;
 }
 
 // ============================================================
+// FACTORY WRAPPER — full generation pipeline for reuse
+// ============================================================
+async function generateFullPage(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle) {
+    const cachedLocality = getLocalityData(suburb, baseCity);
+    const variationSeed = Math.floor(Math.random() * 1000);
+    const contentDNA = generateContentDNA(pageStyle, variationSeed);
+    const intelligence = await analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
+    intelligence.content_dna = contentDNA;
+    const pageContent = await generatePageContent(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle, intelligence);
+    if (pageContent.faq && pageContent.faq.length > 0) {
+        pageContent.faq = await enrichFAQs(apiKey, pageContent.faq, suburb, service, cachedLocality);
+    }
+    pageContent._style = pageStyle;
+    pageContent._styleName = PAGE_STYLES[pageStyle]?.name || 'Local Trust';
+    pageContent._intelligence = intelligence.local_intelligence || {};
+    pageContent._strategy = intelligence.page_strategy || {};
+    pageContent._dna = intelligence.content_dna || {};
+    pageContent._localityCache = cachedLocality;
+    return pageContent;
+}
+
+// ============================================================
 // MAIN HANDLER
 // ============================================================
 module.exports = async (req, res) => {
@@ -345,7 +367,6 @@ module.exports = async (req, res) => {
     if (req.method === 'OPTIONS') { res.status(200).end(); return; }
     if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
-    // Rate limiting
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
     const now = Date.now();
     const requests = (rateLimits.get(ip) || []).filter(t => now - t < RATE_LIMIT_WINDOW);
@@ -391,39 +412,12 @@ module.exports = async (req, res) => {
     }
 
     try {
-        // Get verified locality data (no API call — instant lookup)
-        const cachedLocality = getLocalityData(suburb, baseCity);
-
-        // Generate content DNA directly (bypass model echo — no indirection)
-        const variationSeed = Math.floor(Math.random() * 1000);
-        const contentDNA = generateContentDNA(pageStyle, variationSeed);
-
-        // STAGE 1: Local Intelligence + Strategy
-        const intelligence = await analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
-
-        // Inject content DNA directly — guaranteed correct, not model-altered
-        intelligence.content_dna = contentDNA;
-
-        // STAGE 2: Main Page Generation with human rhythm rules
-        const pageContent = await generatePageContent(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle, intelligence);
-
-        // STAGE 3: FAQ Enrichment (lightweight refinement)
-        if (pageContent.faq && pageContent.faq.length > 0) {
-            pageContent.faq = await enrichFAQs(apiKey, pageContent.faq, suburb, service, cachedLocality);
-        }
-
-        // Attach all metadata
-        pageContent._style = pageStyle;
-        pageContent._styleName = PAGE_STYLES[pageStyle]?.name || 'Local Trust';
-        pageContent._intelligence = intelligence.local_intelligence || {};
-        pageContent._strategy = intelligence.page_strategy || {};
-        pageContent._dna = intelligence.content_dna || {};
-        pageContent._localityCache = cachedLocality;
-
+        const pageContent = await generateFullPage(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
         res.status(200).json({ suburb, content: pageContent });
-
     } catch (error) {
         console.error("Orchestration Error:", error);
         res.status(500).json({ error: `Generation error: ${error.message}` });
     }
 };
+
+module.exports.generateFullPage = generateFullPage;
