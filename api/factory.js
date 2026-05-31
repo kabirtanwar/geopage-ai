@@ -62,8 +62,7 @@ module.exports = async (req, res) => {
                 suburb: item.suburb.split(',')[0],
                 style: item.style,
                 status: 'error',
-                error: `${err.name}: ${err.message}`,
-                stack: (err.stack || '').split('\n').slice(0, 3).join(' | ')
+                error: err.message
             });
         }
     }

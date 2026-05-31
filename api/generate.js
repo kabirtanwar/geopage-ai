@@ -105,11 +105,11 @@ const LOCALITY_CACHE = {
 
 // Regional fallback for unknown suburbs
 const REGIONAL_PATTERNS = {
-    texas: { climate: ['hot summers', 'occasional freezes', 'hail storms'], housing: 'mix of ranch and two-story suburban', service_patterns: ['AC maintenance', 'storm damage', 'foundation issues'] },
-    arizona: { climate: ['extreme summer heat', 'monsoon season', 'hard water'], housing: 'stucco, single-story, pool communities', service_patterns: ['AC systems', 'pool equipment', 'hard water treatment'] },
-    colorado: { climate: ['dry altitude', 'freeze-thaw cycles', 'heavy snow'], housing: 'mix of ranch and modern, mountain-influenced', service_patterns: ['freeze-thaw damage', 'snow load', 'dry climate plumbing'] },
-    florida: { climate: ['humidity', 'hurricane risk', 'year-round heat'], housing: 'single-story, concrete block, pool homes', service_patterns: ['hurricane prep', 'humidity HVAC', 'pool systems'] },
-    california: { climate: ['mild but dry', 'wildfire risk', 'earthquake considerations'], housing: 'diverse, hillside to suburban', service_patterns: ['drought-related', 'seismic plumbing', 'wildfire zone services'] },
+    texas: { landmarks: [], climate: ['hot summers', 'occasional freezes', 'hail storms'], housing: 'mix of ranch and two-story suburban', vibe: 'diverse Texas community', service_patterns: ['AC maintenance', 'storm damage', 'foundation issues'] },
+    arizona: { landmarks: [], climate: ['extreme summer heat', 'monsoon season', 'hard water'], housing: 'stucco, single-story, pool communities', vibe: 'desert community with strong neighborhood identity', service_patterns: ['AC systems', 'pool equipment', 'hard water treatment'] },
+    colorado: { landmarks: [], climate: ['dry altitude', 'freeze-thaw cycles', 'heavy snow'], housing: 'mix of ranch and modern, mountain-influenced', vibe: 'mountain-adjacent community', service_patterns: ['freeze-thaw damage', 'snow load', 'dry climate plumbing'] },
+    florida: { landmarks: [], climate: ['humidity', 'hurricane risk', 'year-round heat'], housing: 'single-story, concrete block, pool homes', vibe: 'coastal Florida community', service_patterns: ['hurricane prep', 'humidity HVAC', 'pool systems'] },
+    california: { landmarks: [], climate: ['mild but dry', 'wildfire risk', 'earthquake considerations'], housing: 'diverse, hillside to suburban', vibe: 'diverse California neighborhood', service_patterns: ['drought-related', 'seismic plumbing', 'wildfire zone services'] },
 };
 
 function getLocalityData(suburb, baseCity) {
@@ -187,7 +187,7 @@ async function analyzeLocalIntelligence(apiKey, businessName, service, suburb, b
 
 VERIFIED LOCALITY DATA (use ONLY these facts — do not invent new landmarks, roads, or neighborhoods):
 Suburb: ${suburb}
-Known landmarks: ${cached.landmarks.length > 0 ? cached.landmarks.join(', ') : 'None verified — use generalized regional references only'}
+Known landmarks: ${(cached.landmarks || []).length > 0 ? cached.landmarks.join(', ') : 'None verified — use generalized regional references only'}
 Housing profile: ${cached.housing}
 Climate concerns: ${cached.climate.join(', ')}
 Area vibe: ${cached.vibe}
