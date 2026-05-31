@@ -157,11 +157,17 @@ function generateContentDNA(pageStyle, variationSeed) {
     const sentenceVariants = ['short-long-mixed', 'long-short-mixed', 'punchy-flow', 'flow-punchy'];
     const emphasisVariants = ['front-loaded', 'back-loaded', 'distributed', 'bookend'];
 
+    const hooks = HOOK_TYPES[pageStyle] || HOOK_TYPES.trust;
+    const authorities = AUTHORITY_APPROACHES[pageStyle] || AUTHORITY_APPROACHES.trust;
+
     return {
         ...base,
         paragraph_count: paragraphVariants[v % paragraphVariants.length],
         sentence_pattern: sentenceVariants[v % sentenceVariants.length],
         emphasis_pattern: emphasisVariants[v % emphasisVariants.length],
+        structure_variant: STRUCTURE_POOL[v % STRUCTURE_POOL.length],
+        hook_type: hooks[v % hooks.length],
+        authority_approach: authorities[v % authorities.length],
         variation_seed: v,
     };
 }
@@ -173,6 +179,36 @@ const PAGE_STYLES = {
     community: { name: 'Community-Focused', tone: 'friendly, local, invested', structure: 'Community connection first, neighborly trust, local references early', hero_style: 'mentions suburb as a place', cta_style: 'neighborly invitation', trust_framing: 'local roots, community feel', section_order: ['hero', 'local_hook', 'trust', 'services', 'faq', 'cta'], avoid: 'corporate language, impersonal tone' },
     minimal: { name: 'Minimal Clean', tone: 'clean, modern, understated', structure: 'Lean content, strong headlines, more white space', hero_style: 'short, clean, one-line sub', cta_style: 'simple get started', trust_framing: 'clean presentation, professional minimalism', section_order: ['hero', 'services', 'cta'], avoid: 'long text blocks, verbose' },
     commercial: { name: 'Commercial/Business', tone: 'professional, operational, B2B', structure: 'Operational capability first, business pain points, reliability focus', hero_style: 'business/commercial context', cta_style: 'site assessment or commercial quote', trust_framing: 'commercial experience, compliance', section_order: ['hero', 'intro', 'services', 'process', 'trust', 'cta'], avoid: 'residential language, casual tone' }
+};
+
+// Content archetype system — creates personality diversity across pages
+const STRUCTURE_POOL = [
+    ['hero', 'local_hook', 'services', 'process', 'faq', 'cta'],
+    ['hero', 'intro', 'services', 'trust', 'faq', 'cta'],
+    ['hero', 'urgency', 'services', 'process', 'faq', 'cta'],
+    ['hero', 'local_hook', 'trust', 'services', 'faq', 'cta'],
+    ['hero', 'services', 'process', 'faq', 'cta'],
+    ['hero', 'intro', 'services', 'process', 'trust', 'faq', 'cta'],
+    ['hero', 'local_hook', 'intro', 'services', 'faq', 'cta'],
+    ['hero', 'services', 'faq', 'cta']
+];
+
+const HOOK_TYPES = {
+    trust: ['homeowner concern', 'neighborhood observation', 'reliability story'],
+    premium: ['expertise insight', 'quality standard', 'process observation'],
+    emergency: ['urgency trigger', 'problem alert', 'time-sensitive issue'],
+    community: ['local insight', 'community reference', 'neighbor story'],
+    minimal: ['direct statement', 'simple observation', 'clean opener'],
+    commercial: ['business pain point', 'operational insight', 'efficiency observation']
+};
+
+const AUTHORITY_APPROACHES = {
+    trust: ['years of local experience', 'homes served in the community', 'family business history'],
+    premium: ['technical certifications', 'advanced equipment', 'specialized expertise'],
+    emergency: ['rapid response time', '24/7 availability', 'fast dispatch record'],
+    community: ['deep neighborhood roots', 'local referrals', 'community partnerships'],
+    minimal: ['straightforward process', 'transparent approach', 'clean track record'],
+    commercial: ['commercial certifications', 'business compliance', 'fleet and crew capacity']
 };
 
 // ============================================================
@@ -243,7 +279,14 @@ async function generatePageContent(apiKey, businessName, service, suburb, baseCi
     const dna = intelligence.content_dna || {};
     const cached = getLocalityData(suburb, baseCity);
 
-    const systemPrompt = `You are a human copywriter. Write a local service landing page that reads real.
+    const systemPrompt = `You are a human copywriter. Write a local landing page that sounds like it was written by a specific type of business — not the same writer every time.
+
+=== ARCHETYPE ===
+Personality: ${style.name}
+Voice: ${style.tone}
+Hook approach: ${dna.hook_type || 'local insight'}
+Authority approach: ${dna.authority_approach || 'local experience'}
+CTA style: ${style.cta_style}
 
 === LOCALITY ===
 Suburb: ${suburb}
@@ -255,41 +298,41 @@ Pain points: ${(li.common_pain_points || cached.service_patterns).join(', ')}
 
 === STRATEGY ===
 Angle: ${ps.dominant_angle || 'local_expertise'}
-Hook: ${ps.emotional_hook || 'trust'}
+Hook emotion: ${ps.emotional_hook || 'trust'}
 CTA intensity: ${ps.cta_intensity || 'moderate'}
-Trust framing: ${ps.trust_approach || 'local experience'}
 
-=== VARIATION PROFILE ===
+=== STRUCTURE ===
+Section order: ${(dna.structure_variant || style.section_order).join(' → ')}
+
+=== VARIATION ===
 Pacing: ${dna.pacing || 'relaxed'}
 Paragraphs: ${dna.paragraph_count || 4}
 Emphasis: ${dna.emphasis_pattern || 'front-loaded'}
 
-=== STYLE ===
-Tone: ${style.tone}
-CTA style: ${style.cta_style}
-Trust: ${style.trust_framing}
-Section order: ${style.section_order.join(' → ')}
-
 === WRITING RULES ===
 1. Vary paragraph lengths — no two should feel the same size
-2. Mix short sentences (4-8 words) with long ones (15-25 words)
+2. Mix short (4-8w), medium (10-14w), and long (15-25w) sentences — never the same rhythm twice
 3. Use contractions: we're, you'll, we've, it's, that's
 4. Never start consecutive sentences with the same word
 5. Reference ${suburb} naturally — landmarks, climate, homes, neighborhood feel
-6. One sentence should sound like talking to a neighbor
+6. Include one earned observation (e.g. "We often see this after summer storms.") — must feel real, not fabricated
+
+=== FAQ GUIDELINES ===
+Write questions that teach about local conditions. Avoid generic service questions.
+Bad: "What areas do you serve?" / "How quickly can you respond?"
+Good: "Why are slab leaks common in ${suburb}?" / "How does the local climate affect ${service}?" / "What seasonal concerns should homeowners in ${suburb} know about?"
 
 === NEVER USE ===
 comprehensive solutions, cutting-edge, leverage, utilize, streamline, committed to excellence, industry-leading, best-in-class, pride ourselves on, understanding the unique challenges, your satisfaction is our priority
 
-=== EXAMPLE ===
-For a plumbing page in Sugar Land:
+=== EXAMPLE (Personality: Local Trust — warm, dependable) ===
 "Our team works on houses just like yours around First Colony. These are newer builds, which means we see a lot of slab leaks and garbage disposal failures — things that creep up when a neighborhood hits the 10-15 year mark. We know these homes. You'll hear the dispatcher say 'oh yeah, we fixed one on your street last week' more often than not."
 
-Short opener. Specific details (slab leaks, disposals). Conversational tone. Locality reference (First Colony). Natural rhythm.
+Short opener. Specific details. Conversational tone. Locality reference. Natural rhythm. Feels like a local business wrote it.
 
 === OUTPUT ===
 Return JSON with these keys:
-meta_title (50-60 chars), meta_description (140-155 chars), headline, subheadline, local_hook (1-2 sentences), paragraphs (array of ${dna.paragraph_count || 4}, vary lengths), services (3-4), process_steps (3 with step+description), faq (3 with q+a), cta_text, trust_signal, section_order
+meta_title (50-60 chars), meta_description (140-155 chars), headline, subheadline, local_hook (1-2 sentences), paragraphs (array of ${dna.paragraph_count || 4}, vary lengths), services (3-4), process_steps (3 with step+description), faq (3 with q+a — make questions locality-aware), cta_text, trust_signal, section_order
 
 RULES: Never claim licensed/insured/bonded/certified. Never invent stats. Never reference unverified landmarks. Output ONLY valid JSON.`;
 
