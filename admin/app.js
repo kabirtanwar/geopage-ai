@@ -211,10 +211,16 @@ async function loadShowcases() {
     }
 
     for (const s of data) {
+        const idx = Math.random().toString(36).slice(2, 8);
+        const rawContent = s.content_json || JSON.stringify(s.content || '');
+        const encodedContent = encodeURIComponent(typeof rawContent === 'string' ? rawContent : JSON.stringify(rawContent));
+        const hasContent = encodedContent.length > 10;
         listDiv.innerHTML += `<div class="showcase-item">
             <div class="niche">${s.niche || 'general'}</div>
             <div class="suburb">${s.suburb || 'Unknown'}</div>
             <div class="style">${s.style || 'default'} · ${s.status || 'pending'}</div>
+            ${hasContent ? `<button class="btn btn-small" onclick="downloadShowcase('${idx}')" style="margin-top:8px;font-size:0.75rem;padding:4px 10px;">Download HTML</button>
+            <div id="showcase-data-${idx}" style="display:none;">${encodedContent}</div>` : ''}
         </div>`;
     }
 }
@@ -270,10 +276,13 @@ document.getElementById('generateShowcases').addEventListener('click', async () 
                 listDiv.innerHTML = '';
             }
             for (const s of result.results) {
+                const idx = Math.random().toString(36).slice(2, 8);
                 listDiv.innerHTML += `<div class="showcase-item">
                     <div class="niche">${s.niche || 'general'}</div>
                     <div class="suburb">${s.suburb || 'Unknown'}</div>
                     <div class="style">${s.style || 'default'} · ${s.status || 'pending'}</div>
+                    <button class="btn btn-small" onclick="downloadShowcase('${idx}')" style="margin-top:8px;font-size:0.75rem;padding:4px 10px;" data-idx="${idx}">Download HTML</button>
+                    <div id="showcase-data-${idx}" style="display:none;">${encodeURIComponent(JSON.stringify(s.content || {}))}</div>
                 </div>`;
             }
         }
@@ -281,6 +290,62 @@ document.getElementById('generateShowcases').addEventListener('click', async () 
         logAction(`Showcase generation error: ${err.message}`);
     }
 });
+
+function downloadShowcase(idx) {
+    const dataDiv = document.getElementById('showcase-data-' + idx);
+    if (!dataDiv) return;
+    const content = JSON.parse(decodeURIComponent(dataDiv.textContent));
+    if (!content || !content.headline) { logAction('Showcase content not available.'); return; }
+
+    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${escHtml(content.meta_title || content.headline)}</title>
+<meta name="description" content="${escHtml(content.meta_description || '')}">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1a1a2e;line-height:1.7}
+.hero{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#fff;padding:80px 24px;text-align:center}
+.hero h1{font-size:2.5rem;margin-bottom:16px;font-weight:700}
+.hero p{font-size:1.15rem;opacity:.85;max-width:600px;margin:0 auto}
+.container{max-width:800px;margin:0 auto;padding:48px 24px}
+.hook{font-size:1.1rem;color:#4a4a6a;border-left:4px solid #6366f1;padding:16px 20px;background:#f8f8ff;margin-bottom:40px;border-radius:0 8px 8px 0}
+.para{margin-bottom:20px;font-size:1rem;color:#333}
+h2{font-size:1.5rem;margin-bottom:20px;color:#1a1a2e}
+ul,ol{padding-left:24px;margin-bottom:32px}
+li{margin-bottom:8px}
+.faq-item{border:1px solid #e2e8f0;border-radius:8px;padding:16px 20px;margin-bottom:12px}
+.faq-item h3{font-size:1rem;font-weight:600;margin-bottom:6px;color:#1a1a2e}
+.faq-item p{font-size:.95rem;color:#4a4a6a}
+.cta{background:#6366f1;color:#fff;text-align:center;padding:48px 24px;margin-top:40px;border-radius:12px}
+.cta p{font-size:1.25rem;font-weight:600}
+.trust{text-align:center;padding:24px;color:#71717a;font-size:.9rem;font-style:italic}
+@media(max-width:640px){.hero h1{font-size:1.75rem}.hero{padding:48px 16px}}
+</style></head><body>
+<section class="hero"><h1>${escHtml(content.headline)}</h1><p>${escHtml(content.subheadline || '')}</p></section>
+<div class="container">
+${content.local_hook ? `<div class="hook">${escHtml(content.local_hook)}</div>` : ''}
+${(content.paragraphs || []).map(p => `<div class="para">${escHtml(p)}</div>`).join('\n')}
+${(content.services || []).length ? `<h2>Services</h2><ul>${content.services.map(s => `<li>${escHtml(s)}</li>`).join('\n')}</ul>` : ''}
+${(content.process_steps || []).length ? `<h2>How It Works</h2><ol>${content.process_steps.map(s => `<li><strong>${escHtml(s.step || '')}</strong> — ${escHtml(s.description || '')}</li>`).join('\n')}</ol>` : ''}
+${(content.faq || []).length ? `<h2>Frequently Asked Questions</h2>${content.faq.map(f => `<div class="faq-item"><h3>${escHtml(f.q || '')}</h3><p>${escHtml(f.a || '')}</p></div>`).join('\n')}` : ''}
+</div>
+<div class="cta"><p>${escHtml(content.cta_text || 'Get Started Today')}</p></div>
+<div class="trust">${escHtml(content.trust_signal || '')}</div>
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(content.meta_title || content.headline).replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 50)}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    logAction('Showcase downloaded.');
+}
+
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 document.getElementById('runAnalytics').addEventListener('click', async () => {
     logAction('Running analytics...');

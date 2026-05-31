@@ -54,7 +54,8 @@ module.exports = async (req, res) => {
                 suburb: item.suburb.split(',')[0],
                 style: item.style,
                 status: 'ready',
-                headline: content.headline
+                headline: content.headline,
+                content: content
             });
         } catch (err) {
             results.push({
