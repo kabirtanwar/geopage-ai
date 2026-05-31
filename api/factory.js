@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
             );
 
             try {
-                await dbInsert('showcase_assets', {
+                const saved = await dbInsert('showcase_assets', {
                     niche: item.niche,
                     suburb: item.suburb.split(',')[0],
                     style: item.style,
@@ -47,7 +47,8 @@ module.exports = async (req, res) => {
                     file_path: getShowcaseRefPath(item.niche, item.suburb, item.style),
                     created_at: new Date().toISOString()
                 });
-            } catch (_) { /* DB persistence failure is non-fatal */ }
+                if (!saved) console.error(`[Factory] dbInsert failed for ${item.niche}/${item.suburb}/${item.style}`);
+            } catch (e) { console.error(`[Factory] dbInsert error:`, e.message); }
 
             results.push({
                 niche: item.niche,
