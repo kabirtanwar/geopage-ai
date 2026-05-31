@@ -182,8 +182,6 @@ const PAGE_STYLES = {
 async function analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle) {
     const style = PAGE_STYLES[pageStyle] || PAGE_STYLES.trust;
     const cached = getLocalityData(suburb, baseCity);
-    const variationSeed = Math.floor(Math.random() * 1000);
-    const dna = generateContentDNA(pageStyle, variationSeed);
 
     const systemPrompt = `You are a local market intelligence analyst. Analyze the suburb and determine the optimal page strategy.
 
@@ -217,15 +215,6 @@ Return a valid JSON object with exactly these keys:
 - "content_pacing": (string)
 - "section_emphasis": (array of 2-3 strings)
 
-"content_dna": (the variation profile):
-- "pacing": "${dna.pacing}"
-- "density": "${dna.density}"
-- "rhythm": "${dna.rhythm}"
-- "cta_pressure": "${dna.cta_pressure}"
-- "emphasis_pattern": "${dna.emphasis_pattern}"
-- "paragraph_count": ${dna.paragraph_count}
-- "sentence_pattern": "${dna.sentence_pattern}"
-
 STRICT RULES:
 - ONLY reference verified landmarks from the list above
 - For unknown landmarks, use safe references like "local homeowners" or "this neighborhood"
@@ -254,101 +243,55 @@ async function generatePageContent(apiKey, businessName, service, suburb, baseCi
     const dna = intelligence.content_dna || {};
     const cached = getLocalityData(suburb, baseCity);
 
-    const systemPrompt = `You are a local SEO copywriter producing a landing page that reads like it was written by a real human copywriter — not AI.
+    const systemPrompt = `You are a human copywriter. Write a local service landing page that reads real.
 
-=== VERIFIED LOCALITY (ONLY reference these facts) ===
-Verified landmarks: ${(li.verified_landmarks || []).join(', ') || 'None — use safe area references'}
-Safe references to use: ${(li.safe_area_references || ['local homeowners', 'this neighborhood']).join(', ')}
+=== LOCALITY ===
+Suburb: ${suburb}
+Landmarks: ${(li.verified_landmarks || []).join(', ') || 'safe neighborhood references'}
 Housing: ${li.housing_profile || cached.housing}
 Climate: ${(li.climate_concerns || cached.climate).join(', ')}
 Vibe: ${li.neighborhood_vibe || cached.vibe}
 Pain points: ${(li.common_pain_points || cached.service_patterns).join(', ')}
 
-CRITICAL: If you want to reference a specific place, ONLY use verified landmarks listed above. For everything else, use the safe_area_references or generic phrases like "local homeowners", "this part of ${baseCity}", or "the ${suburb} community".
-
-=== PAGE STRATEGY ===
+=== STRATEGY ===
 Angle: ${ps.dominant_angle || 'local_expertise'}
-Emotional hook: ${ps.emotional_hook || 'trust'}
+Hook: ${ps.emotional_hook || 'trust'}
 CTA intensity: ${ps.cta_intensity || 'moderate'}
-Trust approach: ${ps.trust_approach || 'local experience'}
-Pacing: ${ps.content_pacing || 'conversational'}
+Trust framing: ${ps.trust_approach || 'local experience'}
 
-=== CONTENT DNA (controls structural variation) ===
+=== VARIATION PROFILE ===
 Pacing: ${dna.pacing || 'relaxed'}
-Density: ${dna.density || 'mixed'}
-Rhythm: ${dna.rhythm || 'warm'}
-CTA pressure: ${dna.cta_pressure || 'moderate'}
+Paragraphs: ${dna.paragraph_count || 4}
 Emphasis: ${dna.emphasis_pattern || 'front-loaded'}
-Paragraph count: ${dna.paragraph_count || 4}
-Sentence pattern: ${dna.sentence_pattern || 'varied'}
 
 === STYLE ===
 Tone: ${style.tone}
-CTA: ${style.cta_style}
+CTA style: ${style.cta_style}
 Trust: ${style.trust_framing}
-Avoid: ${style.avoid}
 Section order: ${style.section_order.join(' → ')}
 
-=== HUMAN WRITING RULES (CRITICAL — this is what makes output feel real) ===
+=== WRITING RULES ===
+1. Vary paragraph lengths — no two should feel the same size
+2. Mix short sentences (4-8 words) with long ones (15-25 words)
+3. Use contractions: we're, you'll, we've, it's, that's
+4. Never start consecutive sentences with the same word
+5. Reference ${suburb} naturally — landmarks, climate, homes, neighborhood feel
+6. One sentence should sound like talking to a neighbor
 
-1. ASYMMETRIC PARAGRAPHS:
-   - Paragraph 1: 2 sentences (short, punchy)
-   - Paragraph 2: 4-5 sentences (detailed, informative)
-   - Paragraph 3: 1-2 sentences (emphatic, transitional)
-   - Paragraph 4: 3 sentences (practical, action-oriented)
-   Do NOT make all paragraphs the same length. Humans never do.
+=== NEVER USE ===
+comprehensive solutions, cutting-edge, leverage, utilize, streamline, committed to excellence, industry-leading, best-in-class, pride ourselves on, understanding the unique challenges, your satisfaction is our priority
 
-2. SENTENCE RHYTHM:
-   - Never start two sentences with the same word
-   - Mix: "We know the area." (3 words) with "Our team has spent years working with homeowners across this neighborhood, handling everything from emergency repairs to scheduled maintenance." (22 words)
-   - Use fragments occasionally: "Fast response. Fair pricing. Done right."
-   - Use one sentence that feels like an aside: "And yes, we handle weekends too."
+=== EXAMPLE ===
+For a plumbing page in Sugar Land:
+"Our team works on houses just like yours around First Colony. These are newer builds, which means we see a lot of slab leaks and garbage disposal failures — things that creep up when a neighborhood hits the 10-15 year mark. We know these homes. You'll hear the dispatcher say 'oh yeah, we fixed one on your street last week' more often than not."
 
-3. CONVERSATIONAL MARKERS:
-   - Use contractions: we're, you'll, we've, it's, that's
-   - Include one sentence that sounds like talking to a neighbor: "If you've lived in ${suburb} for any length of time, you know the summers are not kind to HVAC systems."
-   - Avoid: "We are committed to", "Our team strives to", "We understand the unique"
+Short opener. Specific details (slab leaks, disposals). Conversational tone. Locality reference (First Colony). Natural rhythm.
 
-4. SPECIFICITY:
-   - Reference the verified landmarks or safe area references naturally
-   - Mention one specific service process detail
-   - Include one concrete local condition (climate, housing type, etc.)
+=== OUTPUT ===
+Return JSON with these keys:
+meta_title (50-60 chars), meta_description (140-155 chars), headline, subheadline, local_hook (1-2 sentences), paragraphs (array of ${dna.paragraph_count || 4}, vary lengths), services (3-4), process_steps (3 with step+description), faq (3 with q+a), cta_text, trust_signal, section_order
 
-5. NEVER USE:
-   - "comprehensive solutions"
-   - "cutting-edge"
-   - "leverage"
-   - "utilize"
-   - "streamline"
-   - "understanding the unique challenges"
-   - "we pride ourselves on"
-   - "committed to excellence"
-   - "your satisfaction is our priority"
-   - "industry-leading"
-   - "best-in-class"
-
-=== OUTPUT FORMAT ===
-Return valid JSON with these keys:
-
-"meta_title": (50-60 chars, service + suburb, human-written, no template feel)
-"meta_description": (140-155 chars, includes CTA, sounds like a real search snippet)
-"headline": (H1 — grounded, specific, no hype)
-"subheadline": (one line, customer-benefit focused)
-"local_hook": (1-2 sentences using ONLY verified landmarks or safe area references)
-"paragraphs": Array of exactly ${dna.paragraph_count || 4} strings. FOLLOW THE ASYMMETRIC LENGTH RULES ABOVE. Each paragraph must feel different in rhythm and length.
-"services": Array of 3-4 specific service strings
-"process_steps": Array of exactly 3 objects with "step" (1-3) and "description" (natural sentence)
-"faq": Array of exactly 3 objects with "q" and "a" — questions must sound like real customers calling a business
-"cta_text": Action CTA matching style
-"trust_signal": One sentence using verified data or safe area references
-"section_order": Array from: hero, local_hook, intro, services, process, trust, faq, urgency, cta
-
-RULES:
-1. NEVER claim licensed/insured/bonded/certified unless provided
-2. NEVER invent statistics
-3. NEVER reference landmarks not in the verified list
-4. Every paragraph must have DIFFERENT length and rhythm
-5. Do NOT output any text outside the JSON`;
+RULES: Never claim licensed/insured/bonded/certified. Never invent stats. Never reference unverified landmarks. Output ONLY valid JSON.`;
 
     const userPrompt = `Business: ${businessName}
 Service: ${service}
@@ -451,8 +394,15 @@ module.exports = async (req, res) => {
         // Get verified locality data (no API call — instant lookup)
         const cachedLocality = getLocalityData(suburb, baseCity);
 
-        // STAGE 1: Local Intelligence + Strategy + Content DNA
+        // Generate content DNA directly (bypass model echo — no indirection)
+        const variationSeed = Math.floor(Math.random() * 1000);
+        const contentDNA = generateContentDNA(pageStyle, variationSeed);
+
+        // STAGE 1: Local Intelligence + Strategy
         const intelligence = await analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
+
+        // Inject content DNA directly — guaranteed correct, not model-altered
+        intelligence.content_dna = contentDNA;
 
         // STAGE 2: Main Page Generation with human rhythm rules
         const pageContent = await generatePageContent(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle, intelligence);
