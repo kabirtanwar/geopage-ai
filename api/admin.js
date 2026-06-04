@@ -198,6 +198,25 @@ module.exports = async (req, res) => {
                 await logReply(replyBody.outreach_id, replyBody.sentiment);
                 res.status(200).json({ ok: true });
                 break;
+            case 'refresh-schema': {
+                const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const supabaseUrl = 'https://dfoejyfmhzjsmqxrdazl.supabase.co';
+                try {
+                    const r = await fetch(`${supabaseUrl}/rest/v1/rpc/pgrst_reload`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': supabaseKey,
+                            'Authorization': `Bearer ${supabaseKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const txt = await r.text();
+                    res.status(r.ok ? 200 : 400).json({ ok: r.ok, response: txt });
+                } catch(e) {
+                    res.status(500).json({ ok: false, error: e.message });
+                }
+                break;
+            }
             default: res.status(400).json({ error: 'Unknown route' });
         }
     } catch (error) {
