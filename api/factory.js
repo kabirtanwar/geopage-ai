@@ -38,7 +38,6 @@ module.exports = async (req, res) => {
                     suburb: item.suburb.split(',')[0],
                     style: item.style,
                     status: 'ready',
-                    business_name: item.business_name,
                     service: item.service,
                     content_json: content,
                     file_path: getShowcaseRefPath(item.niche, item.suburb, item.style),
