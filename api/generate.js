@@ -26,11 +26,11 @@ function extractJsonObject(text) {
 }
 
 // ============================================================
-// PROVIDER ROUTER — Cerebras → NVIDIA → Groq fallback chain
+// PROVIDER ROUTER — NVIDIA (unlimited TPD, 40 RPM) → Cerebras (1M TPD, 5 RPM) → Groq (500K TPD)
 // ============================================================
 const PROVIDERS = [
-    { name: 'cerebras', baseUrl: 'https://api.cerebras.ai/v1/chat/completions', model: 'gpt-oss-120b', apiKey: process.env.CEREBRAS_API_KEY },
     { name: 'nvidia', baseUrl: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'meta/llama-3.3-70b-instruct', apiKey: process.env.NVIDIA_API_KEY },
+    { name: 'cerebras', baseUrl: 'https://api.cerebras.ai/v1/chat/completions', model: 'gpt-oss-120b', apiKey: process.env.CEREBRAS_API_KEY },
     { name: 'groq', baseUrl: 'https://api.groq.com/openai/v1/chat/completions', model: 'meta-llama/llama-4-scout-17b-16e-instruct', apiKey: process.env.GROQ_API_KEY },
 ];
 
