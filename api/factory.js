@@ -31,17 +31,21 @@ module.exports = async (req, res) => {
                 item.style
             );
 
-            let db_saved = false, db_error = null;
+            let db_saved = false;
             try {
                 const result = await dbInsert('showcase_assets', {
                     niche: item.niche,
                     suburb: item.suburb.split(',')[0],
                     style: item.style,
-                    status: 'ready'
+                    status: 'ready',
+                    business_name: item.business_name,
+                    service: item.service,
+                    content_json: content,
+                    file_path: getShowcaseRefPath(item.niche, item.suburb, item.style),
+                    created_at: new Date().toISOString()
                 });
                 db_saved = !!result;
-                if (!result) db_error = 'insert returned null';
-            } catch (e) { db_saved = false; db_error = e.message; }
+            } catch (e) { /* insert fails silently */ }
 
             results.push({
                 niche: item.niche,
@@ -50,8 +54,7 @@ module.exports = async (req, res) => {
                 status: 'ready',
                 headline: content.headline,
                 content: content,
-                db_saved: db_saved,
-                db_error: db_error
+                db_saved: db_saved
             });
         } catch (err) {
             results.push({
