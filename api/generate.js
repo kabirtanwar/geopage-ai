@@ -62,7 +62,9 @@ async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature =
             const data = await response.json();
             const text = data.choices?.[0]?.message?.content;
             if (!text) { errors.push(`${p.name}: empty response`); continue; }
-            return extractJsonObject(text);
+            const result = extractJsonObject(text);
+            if (result && typeof result === 'object') result._provider = p.name;
+            return result;
         } catch (err) {
             if (err.name === 'AbortError' || /timeout|network|econnreset|fetch.*fail|enotfound|econnrefused|socket|dns|etimedout/i.test(err.message || '')) {
                 errors.push(`${p.name}: ${err.message}`);
