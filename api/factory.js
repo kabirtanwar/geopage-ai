@@ -37,11 +37,7 @@ module.exports = async (req, res) => {
                     niche: item.niche,
                     suburb: item.suburb.split(',')[0],
                     style: item.style,
-                    status: 'ready',
-                    service: item.service,
-                    content_json: content,
-                    file_path: getShowcaseRefPath(item.niche, item.suburb, item.style),
-                    created_at: new Date().toISOString()
+                    status: 'ready'
                 });
                 db_saved = !!result;
                 if (!result) db_error = 'insert returned null';
