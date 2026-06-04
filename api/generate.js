@@ -54,7 +54,8 @@ async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature =
             if (!response.ok) {
                 const errBody = await response.text();
                 if (response.status === 429 || response.status >= 500 || errBody.includes('rate_limit')) {
-                    errors.push(`${p.name}: ${response.status}`);
+                    console.error(`[callLLM] ${p.name} skipped ${response.status}: ${errBody.slice(0,200)}`);
+                    errors.push(`${p.name}: HTTP ${response.status}`);
                     continue;
                 }
                 throw new Error(`${p.name} API ${response.status}: ${errBody}`);
@@ -67,7 +68,8 @@ async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature =
             return result;
         } catch (err) {
             if (err.name === 'AbortError' || /timeout|network|econnreset|fetch.*fail|enotfound|econnrefused|socket|dns|etimedout/i.test(err.message || '')) {
-                errors.push(`${p.name}: ${err.message}`);
+                console.error(`[callLLM] ${p.name} skipped: ${err.message.slice(0,200)}`);
+                errors.push(`${p.name}: ${err.message.slice(0,100)}`);
                 continue;
             }
             throw err;
