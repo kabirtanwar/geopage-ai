@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
                 item.style
             );
 
-            let db_saved = false;
+            let db_saved = false, db_error = null;
             try {
                 const result = await dbInsert('showcase_assets', {
                     niche: item.niche,
@@ -45,7 +45,8 @@ module.exports = async (req, res) => {
                     created_at: new Date().toISOString()
                 });
                 db_saved = !!result;
-            } catch (e) { db_saved = false; }
+                if (!result) db_error = 'insert returned null';
+            } catch (e) { db_saved = false; db_error = e.message; }
 
             results.push({
                 niche: item.niche,
@@ -54,7 +55,8 @@ module.exports = async (req, res) => {
                 status: 'ready',
                 headline: content.headline,
                 content: content,
-                db_saved: db_saved
+                db_saved: db_saved,
+                db_error: db_error
             });
         } catch (err) {
             results.push({
