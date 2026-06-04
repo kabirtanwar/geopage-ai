@@ -31,7 +31,7 @@ function extractJsonObject(text) {
 const PROVIDERS = [
     { name: 'cerebras', baseUrl: 'https://api.cerebras.ai/v1/chat/completions', model: 'gpt-oss-120b', apiKey: process.env.CEREBRAS_API_KEY },
     { name: 'nvidia', baseUrl: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'meta/llama-3.3-70b-instruct', apiKey: process.env.NVIDIA_API_KEY },
-    { name: 'groq', baseUrl: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-4-scout-17b-16e-instruct', apiKey: process.env.GROQ_API_KEY },
+    { name: 'groq', baseUrl: 'https://api.groq.com/openai/v1/chat/completions', model: 'meta-llama/llama-4-scout-17b-16e-instruct', apiKey: process.env.GROQ_API_KEY },
 ];
 
 async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature = 0.7) {
@@ -71,7 +71,9 @@ async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature =
             throw err;
         }
     }
-    throw new Error(`All providers exhausted: ${errors.join('; ')}`);
+    const msg = `All providers exhausted: ${errors.join(' | ')}`;
+    console.error('[callLLM]', msg);
+    throw new Error(msg);
 }
 
 async function verifyAuth(token) {
