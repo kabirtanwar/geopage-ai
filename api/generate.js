@@ -25,26 +25,53 @@ function extractJsonObject(text) {
     return JSON.parse(candidate.slice(firstBrace, lastBrace + 1));
 }
 
-async function groqCall(apiKey, systemPrompt, userPrompt, maxTokens = 2000, temperature = 0.7) {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
-            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-            response_format: { type: "json_object" },
-            temperature,
-            max_tokens: maxTokens
-        })
-    });
-    if (!response.ok) {
-        const errBody = await response.text();
-        throw new Error(`Groq API ${response.status}: ${errBody}`);
+// ============================================================
+// PROVIDER ROUTER — Cerebras → NVIDIA → Groq fallback chain
+// ============================================================
+const PROVIDERS = [
+    { name: 'cerebras', baseUrl: 'https://api.cerebras.ai/v1/chat/completions', model: 'gpt-oss-120b', apiKey: process.env.CEREBRAS_API_KEY },
+    { name: 'nvidia', baseUrl: 'https://integrate.api.nvidia.com/v1/chat/completions', model: 'meta/llama-3.3-70b-instruct', apiKey: process.env.NVIDIA_API_KEY },
+    { name: 'groq', baseUrl: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-4-scout-17b-16e-instruct', apiKey: process.env.GROQ_API_KEY },
+];
+
+async function callLLM(systemPrompt, userPrompt, maxTokens = 2000, temperature = 0.7) {
+    const errors = [];
+    for (const p of PROVIDERS) {
+        if (!p.apiKey) { errors.push(`${p.name}: no key`); continue; }
+        try {
+            const response = await fetch(p.baseUrl, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${p.apiKey}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: p.model,
+                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                    response_format: { type: 'json_object' },
+                    temperature,
+                    max_tokens: maxTokens,
+                }),
+                signal: AbortSignal.timeout(20000),
+            });
+            if (!response.ok) {
+                const errBody = await response.text();
+                if (response.status === 429 || response.status >= 500 || errBody.includes('rate_limit')) {
+                    errors.push(`${p.name}: ${response.status}`);
+                    continue;
+                }
+                throw new Error(`${p.name} API ${response.status}: ${errBody}`);
+            }
+            const data = await response.json();
+            const text = data.choices?.[0]?.message?.content;
+            if (!text) { errors.push(`${p.name}: empty response`); continue; }
+            return extractJsonObject(text);
+        } catch (err) {
+            if (err.name === 'AbortError' || /timeout|network|econnreset|fetch.*fail|enotfound|econnrefused|socket|dns|etimedout/i.test(err.message || '')) {
+                errors.push(`${p.name}: ${err.message}`);
+                continue;
+            }
+            throw err;
+        }
     }
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (!text) throw new Error('Empty Groq response');
-    return extractJsonObject(text);
+    throw new Error(`All providers exhausted: ${errors.join('; ')}`);
 }
 
 async function verifyAuth(token) {
@@ -215,7 +242,7 @@ const AUTHORITY_APPROACHES = {
 // STAGE 1: LOCAL INTELLIGENCE + STRATEGY ANALYZER
 // Uses verified locality cache + AI analysis
 // ============================================================
-async function analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle) {
+async function analyzeLocalIntelligence(businessName, service, suburb, baseCity, localContext, pageStyle) {
     const style = PAGE_STYLES[pageStyle] || PAGE_STYLES.trust;
     const cached = getLocalityData(suburb, baseCity);
 
@@ -265,14 +292,14 @@ City: ${baseCity}
 User Context: ${localContext || 'None'}
 Style: ${style.name}`;
 
-    return await groqCall(apiKey, systemPrompt, userPrompt, 900, 0.5);
+    return await callLLM(systemPrompt, userPrompt, 900, 0.5);
 }
 
 // ============================================================
 // STAGE 2: MAIN PAGE GENERATION
 // Uses locality cache + content DNA + human rhythm rules
 // ============================================================
-async function generatePageContent(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle, intelligence) {
+async function generatePageContent(businessName, service, suburb, baseCity, localContext, pageStyle, intelligence) {
     const style = PAGE_STYLES[pageStyle] || PAGE_STYLES.trust;
     const li = intelligence.local_intelligence || {};
     const ps = intelligence.page_strategy || {};
@@ -343,14 +370,14 @@ City: ${baseCity}
 Context: ${localContext || 'None'}
 Style: ${style.name}`;
 
-    return await groqCall(apiKey, systemPrompt, userPrompt, 2200, 0.85);
+    return await callLLM(systemPrompt, userPrompt, 2200, 0.85);
 }
 
 // ============================================================
 // STAGE 3: FAQ ENRICHMENT (optional, lightweight)
 // Refines FAQ answers to feel more conversational and localized
 // ============================================================
-async function enrichFAQs(apiKey, faqs, suburb, service, cachedLocality) {
+async function enrichFAQs(faqs, suburb, service, cachedLocality) {
     if (!faqs || faqs.length === 0) return faqs;
 
     const systemPrompt = `You are editing FAQ answers for a local service business page. Make each answer:
@@ -369,7 +396,7 @@ Suburb: ${suburb}
 FAQs to improve: ${JSON.stringify(faqs)}`;
 
     try {
-        const result = await groqCall(apiKey, systemPrompt, userPrompt, 500, 0.6);
+        const result = await callLLM(systemPrompt, userPrompt, 500, 0.6);
         return result.faq || faqs;
     } catch {
         return faqs; // Fallback to original if enrichment fails
@@ -379,15 +406,15 @@ FAQs to improve: ${JSON.stringify(faqs)}`;
 // ============================================================
 // FACTORY WRAPPER — full generation pipeline for reuse
 // ============================================================
-async function generateFullPage(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle) {
+async function generateFullPage(businessName, service, suburb, baseCity, localContext, pageStyle) {
     const cachedLocality = getLocalityData(suburb, baseCity);
     const variationSeed = Math.floor(Math.random() * 1000);
     const contentDNA = generateContentDNA(pageStyle, variationSeed);
-    const intelligence = await analyzeLocalIntelligence(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
+    const intelligence = await analyzeLocalIntelligence(businessName, service, suburb, baseCity, localContext, pageStyle);
     intelligence.content_dna = contentDNA;
-    const pageContent = await generatePageContent(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle, intelligence);
+    const pageContent = await generatePageContent(businessName, service, suburb, baseCity, localContext, pageStyle, intelligence);
     if (pageContent.faq && pageContent.faq.length > 0) {
-        pageContent.faq = await enrichFAQs(apiKey, pageContent.faq, suburb, service, cachedLocality);
+        pageContent.faq = await enrichFAQs(pageContent.faq, suburb, service, cachedLocality);
     }
     pageContent._style = pageStyle;
     pageContent._styleName = PAGE_STYLES[pageStyle]?.name || 'Local Trust';
@@ -433,9 +460,8 @@ module.exports = async (req, res) => {
         return;
     }
 
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-        res.status(500).json({ error: 'GROQ_API_KEY not configured.' });
+    if (!process.env.CEREBRAS_API_KEY && !process.env.NVIDIA_API_KEY && !process.env.GROQ_API_KEY) {
+        res.status(500).json({ error: 'No LLM API keys configured.' });
         return;
     }
 
@@ -455,7 +481,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const pageContent = await generateFullPage(apiKey, businessName, service, suburb, baseCity, localContext, pageStyle);
+        const pageContent = await generateFullPage(businessName, service, suburb, baseCity, localContext, pageStyle);
         res.status(200).json({ suburb, content: pageContent });
     } catch (error) {
         console.error("Orchestration Error:", error);
